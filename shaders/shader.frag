@@ -77,6 +77,6 @@ void main() {
 
     if(dot(L, N) < 0.0)
         specular = vec3(0.0,0.0,0.0);
-    //gl_FragColor = vec4(ambientColor() + diffuse + specular, 1.0);
-    gl_FragColor = vec4(uColor, 1.0);
+    gl_FragColor = vec4(ambientColor() + diffuse + specular, 1.0);
+    //gl_FragColor = vec4(uColor, 1.0);
 }

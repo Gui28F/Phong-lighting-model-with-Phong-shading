@@ -6,7 +6,6 @@ import * as CUBE from './libs/objects/cube.js';
 import * as TORUS from './libs/objects/torus.js';
 import * as BUNNY from './libs/objects/bunny.js';
 
-const GROUND_COLOR = vec3(1, 0.8, 0.7);
 
 /** @type WebGLRenderingContext */
 let gl;
@@ -29,38 +28,53 @@ const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
-        position: vec4(10, 10, 0, 1),
+        position: vec4(0, 0, 10, 1),
         lightAmb: vec3(0.2, 0.2, 0.2),
         lightDif: vec3(0.7, 0.7, 0.7),
         lightSpec: vec3(1.0, 1.0, 1.0),
     }
 ]
-let redMaterial = {
-    materialAmb: vec3(0.2, 0.2, 0.2),
-    materialDif: vec3(0.2, 0.2, 0.2),
-    materialSpec: vec3(0.2, 0.2, 0.2),
-    shininess: 2
-}
 
-let blackMaterial = {
-    materialAmb: vec3(0.2, 0.2, 0.2),
-    materialDif: vec3(0.2, 0.2, 0.2),
-    materialSpec: vec3(0.1, 0.1, 0.11),
+let platformMaterial = {
+    materialAmb: vec3(1, 0, 0),
+    materialDif: vec3(1, 0, 0),
+    materialSpec: PLATFORM_COLOR,
     shininess: 1
 }
 
-let blueMaterial = {
-    materialAmb: vec3(0.2, 0.2, 0.2),
-    materialDif: vec3(0.1, 0, 0),
-    materialSpec: vec3(0.1, 0.1, 0.11),
+let cubeMaterial = {
+    materialAmb: vec3(1, 0, 0),
+    materialDif: vec3(1, 0, 0),
+    materialSpec: CUBE_COLOR,
+    shininess: 1
+}
+
+let cylinderMaterial = {
+    materialAmb: vec3(1, 0, 0),
+    materialDif: vec3(1, 0, 0),
+    materialSpec: CYLINDER_COLOR,
+    shininess: 1
+}
+
+let torusMaterial = {
+    materialAmb: vec3(0, 1, 0),
+    materialDif: vec3(0, 1, 0),
+    materialSpec: TORUS_COLOR,
+    shininess: 3
+}
+
+let bunnyMaterial = {
+    materialAmb: vec3(1, 0, 0),
+    materialDif: vec3(1, 0, 0),
+    materialSpec: BUNNY_COLOR,
     shininess: 1
 }
 
 function uploadObject(program, id, object) {
     gl.useProgram(program);
-    const materialAmb = gl.getUniformLocation(program, id + ".materialAmb");
-    const materialDif = gl.getUniformLocation(program, id + ".materialDif");
-    const materialSpe = gl.getUniformLocation(program, id + ".materialSpec");
+    const materialAmb = gl.getUniformLocation(program, id + ".Ka");
+    const materialDif = gl.getUniformLocation(program, id + ".Ks");
+    const materialSpe = gl.getUniformLocation(program, id + ".Ks");
     const shininess = gl.getUniformLocation(program, id + ".shininess");
     gl.uniform3fv(materialAmb, object.materialAmb);
     gl.uniform3fv(materialDif, object.materialDif);
@@ -75,14 +89,18 @@ function uploadMatrix(program, id, matrix) {
 
 function uploadLights(program, id, lights) {
     gl.useProgram(program);
+    const uNLights = gl.getUniformLocation(program, "uNLights");
+    gl.uniform1i(uNLights, lights.length);
     for (let i = 0; i < lights.length; i++) {
-        const lightAmb = gl.getUniformLocation(program, id + "[" + i + "].lightAmb");
-        const lightDif = gl.getUniformLocation(program, id + "[" + i + "].lightDif");
-        const lightSpec = gl.getUniformLocation(program, id + "[" + i + "].lightSpec");
+        const lightAmb = gl.getUniformLocation(program, id + "[" + i + "].ambient");
+        const lightDif = gl.getUniformLocation(program, id + "[" + i + "].diffuse");
+        const lightSpec = gl.getUniformLocation(program, id + "[" + i + "].specular");
+        const pos = gl.getUniformLocation(program, id + "[" + i + "].position");
         const lightPosition = gl.getUniformLocation(program, "lightsPositions[" + i + "]");
         gl.uniform3fv(lightAmb, lights[i].lightAmb);
         gl.uniform3fv(lightDif, lights[i].lightDif);
         gl.uniform3fv(lightSpec, lights[i].lightSpec);
+        gl.uniform4fv(pos, lights[i].position);
         gl.uniform4fv(lightPosition, lights[i].position);
     }
 }
@@ -92,7 +110,7 @@ function setup(shaders) {
     program = buildProgramFromSources(gl, shaders["shader.vert"], shaders["shader.frag"]);
     uColor = gl.getUniformLocation(program, "uColor")
     mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
-    mView = lookAt([0, VP_DISTANCE /4, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
+    mView = lookAt([0, VP_DISTANCE / 4, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
     loadMatrix(mView);
     mode = gl.TRIANGLES;
     resize_canvas();
@@ -138,43 +156,58 @@ function changeColor(color) {
     gl.uniform3fv(uColor, color);
 }
 
-function drawScene(){
+function drawScene() {
     pushMatrix();
-        multTranslation([0, -1, 0]);
-        multScale([10, 0.5, 10])
-        pushMatrix();
-            changeColor(PLATFORM_COLOR);
-            uploadModelView();
-            CUBE.draw(gl, program, mode);
-        popMatrix();
-        pushMatrix();
-            multTranslation([0.2, 2.5, -0.2]);
-            multScale([0.2, 4, 0.2]);
-            changeColor(CYLINDER_COLOR);
-            uploadModelView();
-            CYLINDER.draw(gl, program, mode);
-        popMatrix();
-        pushMatrix();
-            multTranslation([-0.2, 2.5, -0.2]);
-            multScale([0.2, 4, 0.2]);
-            changeColor(CUBE_COLOR);
-            uploadModelView();
-            CUBE.draw(gl, program, mode);
-        popMatrix();    
-        pushMatrix();
-            multTranslation([-0.2, 1.3, 0.2]);
-            multScale([0.2, 4, 0.2]);
-            changeColor(TORUS_COLOR);
-            uploadModelView();
-            TORUS.draw(gl, program, mode);
-        popMatrix();   
-        pushMatrix();
-            multTranslation([0.2, 0.5, 0.2]);     
-            multScale([2, 25, 2]);
-            changeColor(BUNNY_COLOR);
-            uploadModelView();
-            BUNNY.draw(gl, program, mode);
-        popMatrix();   
+    multTranslation([0, -1, 0]);
+    multScale([10, 0.5, 10])
+    pushMatrix();
+    changeColor(PLATFORM_COLOR);
+    uploadObject(program, "uMaterial", platformMaterial);
+    uploadMatrix(program, "mModelView", modelView());
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
+    uploadModelView();
+    CUBE.draw(gl, program, mode);
+    popMatrix();
+    pushMatrix();
+    multTranslation([0.2, 2.5, -0.2]);
+    multScale([0.2, 4, 0.2]);
+    changeColor(CYLINDER_COLOR);
+    uploadModelView();
+    uploadObject(program, "uMaterial", cylinderMaterial);
+    uploadMatrix(program, "mModelView", modelView());
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
+    CYLINDER.draw(gl, program, mode);
+    popMatrix();
+    pushMatrix();
+    multTranslation([-0.2, 2.5, -0.2]);
+    multScale([0.2, 4, 0.2]);
+    changeColor(CUBE_COLOR);
+    uploadModelView();
+    uploadObject(program, "uMaterial", cubeMaterial);
+    uploadMatrix(program, "mModelView", modelView());
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
+    CUBE.draw(gl, program, mode);
+    popMatrix();
+    pushMatrix();
+    multTranslation([-0.2, 1.3, 0.2]);
+    multScale([0.2, 4, 0.2]);
+    changeColor(TORUS_COLOR);
+    uploadModelView();
+    uploadObject(program, "uMaterial", torusMaterial);
+    uploadMatrix(program, "mModelView", modelView());
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
+    TORUS.draw(gl, program, mode);
+    popMatrix();
+    pushMatrix();
+    multTranslation([0.2, 0.5, 0.2]);
+    multScale([2, 25, 2]);
+    changeColor(BUNNY_COLOR);
+    uploadObject(program, "uMaterial", bunnyMaterial);
+    uploadMatrix(program, "mModelView", modelView());
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
+    uploadModelView();
+    BUNNY.draw(gl, program, mode);
+    popMatrix();
     popMatrix();
 }
 
