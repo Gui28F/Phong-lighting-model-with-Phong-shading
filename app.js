@@ -2,8 +2,9 @@ import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from "./libs
 import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, perspective, inverse, rotateX, normalMatrix } from "./libs/MV.js";
 import { modelView, loadMatrix, multRotationY, multScale, multRotationX, multRotationZ, pushMatrix, popMatrix, multTranslation } from "./libs/stack.js";
 import * as CYLINDER from './libs/objects/cylinder.js';
-import * as SPHERE from './libs/objects/sphere.js';
 import * as CUBE from './libs/objects/cube.js';
+import * as TORUS from './libs/objects/torus.js';
+import * as BUNNY from './libs/objects/bunny.js';
 
 const GROUND_COLOR = vec3(1, 0.8, 0.7);
 
@@ -19,6 +20,12 @@ let mProjection;
 const canvas = document.getElementById("gl-canvas");
 let aspect = canvas.width / canvas.height;
 let program;
+
+const PLATFORM_COLOR = [0.66, 0.46, 0.28];
+const CYLINDER_COLOR = [0.18, 0.55, 0.34];
+const CUBE_COLOR = [0.64, 0.19, 0.19];
+const TORUS_COLOR = [0.13, 0.61, 0];
+const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
@@ -104,8 +111,9 @@ function setup(shaders) {
     }
     gl.clearColor(0, 0, 0, 1.0);
     CYLINDER.init(gl);
-    SPHERE.init(gl);
     CUBE.init(gl);
+    TORUS.init(gl);
+    BUNNY.init(gl);
     gl.enable(gl.DEPTH_TEST);   // Enables Z-buffer depth test
 
     window.requestAnimationFrame(render);
@@ -130,7 +138,45 @@ function changeColor(color) {
     gl.uniform3fv(uColor, color);
 }
 
-
+function drawScene(){
+    pushMatrix();
+        multTranslation([0, -1, 0]);
+        multScale([10, 0.5, 10])
+        pushMatrix();
+            changeColor(PLATFORM_COLOR);
+            uploadModelView();
+            CUBE.draw(gl, program, mode);
+        popMatrix();
+        pushMatrix();
+            multTranslation([0.2, 2.5, -0.2]);
+            multScale([0.2, 4, 0.2]);
+            changeColor(CYLINDER_COLOR);
+            uploadModelView();
+            CYLINDER.draw(gl, program, mode);
+        popMatrix();
+        pushMatrix();
+            multTranslation([-0.2, 2.5, -0.2]);
+            multScale([0.2, 4, 0.2]);
+            changeColor(CUBE_COLOR);
+            uploadModelView();
+            CUBE.draw(gl, program, mode);
+        popMatrix();    
+        pushMatrix();
+            multTranslation([-0.2, 1.3, 0.2]);
+            multScale([0.2, 4, 0.2]);
+            changeColor(TORUS_COLOR);
+            uploadModelView();
+            TORUS.draw(gl, program, mode);
+        popMatrix();   
+        pushMatrix();
+            multTranslation([0.2, 0.5, 0.2]);     
+            multScale([2, 25, 2]);
+            changeColor(BUNNY_COLOR);
+            uploadModelView();
+            BUNNY.draw(gl, program, mode);
+        popMatrix();   
+    popMatrix();
+}
 
 function render() {
     time++;
@@ -141,7 +187,6 @@ function render() {
     gl.useProgram(program);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
     loadMatrix(mView);
-
 }
 
 /*x.addEventListener('input', function () {
