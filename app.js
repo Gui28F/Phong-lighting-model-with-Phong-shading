@@ -256,7 +256,7 @@ function render() {
     //mProjection = perspective(visionVol.fovy, aspect, visionVol.near, visionVol.far);
 }
 
-/*x.addEventListener('input', function () {
+x.addEventListener('input', function () {
     mView = lookAt([0, 0, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
     mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
 })
@@ -264,8 +264,9 @@ y.addEventListener('input', function () {
     mView = lookAt([0, 0, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
     mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
 })
-*/
+
 function loadView() {
+    console.log(cameraPos.upX, cameraPos.upY, cameraPos.upZ)
     mView = lookAt([cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ], 
         [cameraPos.atX, cameraPos.atY, cameraPos.atZ], [cameraPos.upX, cameraPos.upY, cameraPos.upZ]);
     loadMatrix(mView);
@@ -303,9 +304,12 @@ atFolder.add(cameraPos, 'atY', 0, 10).name('y').onChange(loadView);
 atFolder.add(cameraPos, 'atZ', 0, 10).name('z').onChange(loadView);
 //camera up position
 const upFolder = cameraFolder.addFolder('up');
+
 upFolder.add(cameraPos, 'upX', -1, 1).name('x').onChange(loadView);
 upFolder.add(cameraPos, 'upY', -1, 1).name('y').onChange(loadView);
-upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
+const upZ = upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
+upZ.setValue(1);
+
 
 
 //Lights 
@@ -319,10 +323,12 @@ const axis1Folder = light1Folder.addFolder('axis');
 
 //Change material characteristics
 const materialFolder = gui.addFolder('material');
-materialFolder.add(bunnyMaterial, 'materialAmb', vec3(0,0,0), vec3(255,255,255)).name('Ka');
-materialFolder.add(bunnyMaterial, 'materialDif', vec3(0,0,0), vec3(255,255,255)).name('Kb');
-materialFolder.add(bunnyMaterial, 'materialSpec', vec3(0,0,0), vec3(255,255,255)).name('Ks');
-materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
+materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
+materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Kb');// da um warning
+materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ks');// da um warning
+//materialFolder.add(bunnyMaterial, 'materialDif', vec3(0,0,0), vec3(255,255,255)).name('Kb');
+//materialFolder.add(bunnyMaterial, 'materialSpec', vec3(0,0,0), vec3(255,255,255)).name('Ks');
+//materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
 
 const urls = ["shader.vert", "shader.frag"];
 loadShadersFromURLS(urls).then(shaders => setup(shaders))
