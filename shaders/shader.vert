@@ -33,7 +33,7 @@ void main() {
     vec3 posC = (mModelView * vPosition).xyz;
     fLight = light(posC);
     fNormal = (mNormals * vNormal).xyz;
-   /* if(prespective == 1)
+    //if(prespective == 1)
         fViewer = -posC;
-    else*/ fViewer = vec3(0,0,1);
+    //else fViewer = vec3(0,0,1);
 }

@@ -85,7 +85,7 @@ let visionVol = {
 let cameraPos = {
     eyeX: 0, eyeY: 0, eyeZ: 0,
     atX: 0, atY: 0, atZ: 0,
-    upX: 0, upY: 0, upZ: 0,
+    upX: 0, upY: 0, upZ: 1,
 }
 
 function normalizeArray(a) {
@@ -259,17 +259,16 @@ function render() {
     //mProjection = perspective(visionVol.fovy, aspect, visionVol.near, visionVol.far);
 }
 
-x.addEventListener('input', function () {
+/*x.addEventListener('input', function () {
     mView = lookAt([0, 0, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
     mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
 })
 y.addEventListener('input', function () {
     mView = lookAt([0, 0, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
     mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
-})
+})*/
 
 function loadView() {
-    console.log(cameraPos.upX, cameraPos.upY, cameraPos.upZ)
     mView = lookAt([cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ],
         [cameraPos.atX, cameraPos.atY, cameraPos.atZ], [cameraPos.upX, cameraPos.upY, cameraPos.upZ]);
     loadMatrix(mView);
@@ -310,8 +309,8 @@ const upFolder = cameraFolder.addFolder('up');
 
 upFolder.add(cameraPos, 'upX', -1, 1).name('x').onChange(loadView);
 upFolder.add(cameraPos, 'upY', -1, 1).name('y').onChange(loadView);
-const upZ = upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
-upZ.setValue(1);
+upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
+
 
 
 
@@ -320,6 +319,10 @@ const lightsFolder = gui.addFolder('lights');
 //Spotlight type
 const light1Folder = lightsFolder.addFolder('light1');
 const position1Folder = light1Folder.addFolder('position');
+position1Folder.add(lights[0].position, '0', -10, 10).name('x').onChange(loadView);
+position1Folder.add(lights[0].position, '1', -10, 10).name('y').onChange(loadView);
+position1Folder.add(lights[0].position, '2', -10, 10).name('z').onChange(loadView);
+position1Folder.add(lights[0].position, '3', 0, 1).name('w').onChange(loadView);
 const intensities1Folter = light1Folder.addFolder('intensities');
 const axis1Folder = light1Folder.addFolder('axis');
 
@@ -329,8 +332,6 @@ const materialFolder = gui.addFolder('material');
 materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
 materialFolder.addColor(bunnyMaterial, 'materialDif').name('Kd');// da um warning
 materialFolder.addColor(bunnyMaterial, 'materialSpec').name('Ks');// da um warning
-//materialFolder.add(bunnyMaterial, 'materialDif', vec3(0,0,0), vec3(255,255,255)).name('Kb');
-//materialFolder.add(bunnyMaterial, 'materialSpec', vec3(0,0,0), vec3(255,255,255)).name('Ks');
 materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
 
 const urls = ["shader.vert", "shader.frag"];
