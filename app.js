@@ -64,17 +64,17 @@ let torusMaterial = {
 }
 
 let bunnyMaterial = {
-    materialAmb: vec3(1, 0, 0),
-    materialDif: vec3(1, 0, 0),
+    materialAmb: vec3(0, 0, 0),
+    materialDif: vec3(0, 0, 0),
     materialSpec: BUNNY_COLOR,
-    shininess: 1
+    shininess: 0
 }
 
 function uploadObject(program, id, object) {
     gl.useProgram(program);
     const materialAmb = gl.getUniformLocation(program, id + ".Ka");
     const materialDif = gl.getUniformLocation(program, id + ".Ks");
-    const materialSpe = gl.getUniformLocation(program, id + ".Ks");
+    const materialSpe = gl.getUniformLocation(program, id + ".Kd");
     const shininess = gl.getUniformLocation(program, id + ".shininess");
     gl.uniform3fv(materialAmb, object.materialAmb);
     gl.uniform3fv(materialDif, object.materialDif);
