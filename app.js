@@ -30,45 +30,50 @@ const BUNNY_COLOR = [1, 0.80, 0.86];
 let lights = [
     {
         position: vec4(0.0, 1.8, 1.3, 1.0),
-        lightAmb: vec3(0.2, 0.2, 0.2),
-        lightDif: vec3(0.7, 0.7, 0.7),
-        lightSpec: vec3(1.0, 1.0, 1.0),
+        lightAmb: vec3(40, 40, 40),
+        lightDif: vec3(140, 140, 140),
+        lightSpec: vec3(200, 200, 200),
+        intensity: 1,
+        axis: vec3(0, 0, -1),
+        aperture: 10,
+        cutoff: 10,
     }
 ]
 
+
 let platformMaterial = {
-    materialAmb: vec3(255, 0, 0),
-    materialDif: vec3(255, 0, 0),
-    materialSpec: vec3(168.3,117.3, 71.4),
+    materialAmb: vec3(0.66*200, 0.46*200, 0.28*200),
+    materialDif: vec3(0.66*200, 0.46*200, 0.28*200),
+    materialSpec: vec3(0.66*200, 0.46*200, 0.28*200),
     shininess: 1
 }
 
 let cubeMaterial = {
-    materialAmb: vec3(255, 0, 0),
-    materialDif: vec3(255, 0, 0),
-    materialSpec: vec3(163.2, 48.45, 48.45),
+    materialAmb: vec3(0.64*200, 0.19*200, 0.19*200),
+    materialDif: vec3(0.64*200, 0.19*200, 0.19*200),
+    materialSpec: vec3(0.64*200, 0.19*200, 0.19*200),
     shininess: 1
 }
 
 let cylinderMaterial = {
-    materialAmb: vec3(255, 0, 0),
-    materialDif: vec3(255, 0, 0),
-    materialSpec: vec3(45.9, 140.25, 86.7),
+    materialAmb: vec3(0.18*200, 0.55*200, 0.34*200),
+    materialDif: vec3(0.18*200, 0.55*200, 0.34*200),
+    materialSpec: vec3(0.18*200, 0.55*200, 0.34*200),
     shininess: 1
 }
 
 let torusMaterial = {
-    materialAmb: vec3(0.0215*255, 0.1745*255, 0.0215*255),
-    materialDif: vec3(0.07568*255, 0.51424*255, 0.07568*255),
-    materialSpec: vec3(33.25, 155.55, 0.),
+    materialAmb: vec3(0.0215*200, 0.1745*200, 0.0215*200),
+    materialDif: vec3(0.07568*200, 0.51424*200, 0.07568*200),
+    materialSpec: vec3(0.633*200, 0.727811*200, 0.633*200),
     shininess: 5
 }
 
 let bunnyMaterial = {
-    materialAmb: vec3(0.2, 0.1, 0.1),
-    materialDif: vec3(0.2, 0.1, 0.1),
-    materialSpec: vec3(255, 204, 219.3),
-    shininess: 0.1
+    materialAmb: vec3(1*200, 0.80*200, 0.86*200),
+    materialDif: vec3(1*200, 0.80*200, 0.86*200),
+    materialSpec: vec3(1*200, 0.80*200, 0.86*200),
+    shininess: 1
 }
 
 let ocultFace = {
@@ -88,8 +93,12 @@ let cameraPos = {
     upX: 0, upY: 0, upZ: 1,
 }
 
-function normalizeArray(a) {
+function normalizeColorArray(a) {
     return [a[0] / 255, a[1] / 255, a[2] / 255];
+}
+
+function normalizeLightArray(a) {
+    return [a[0] / 200, a[1] / 200, a[2] / 200];
 }
 function uploadObject(program, id, object) {
     gl.useProgram(program);
@@ -97,9 +106,9 @@ function uploadObject(program, id, object) {
     const materialDif = gl.getUniformLocation(program, id + ".Kd");
     const materialSpe = gl.getUniformLocation(program, id + ".Ks");
     const shininess = gl.getUniformLocation(program, id + ".shininess");
-    gl.uniform3fv(materialAmb, normalizeArray(object.materialAmb));
-    gl.uniform3fv(materialDif, normalizeArray(object.materialDif));
-    gl.uniform3fv(materialSpe, normalizeArray(object.materialSpec));
+    gl.uniform3fv(materialAmb, normalizeColorArray(object.materialAmb));
+    gl.uniform3fv(materialDif, normalizeColorArray(object.materialDif));
+    gl.uniform3fv(materialSpe, normalizeColorArray(object.materialSpec));
     gl.uniform1f(shininess, object.shininess);
 }
 function uploadMatrix(program, id, matrix) {
@@ -118,9 +127,9 @@ function uploadLights(program, id, lights) {
         const lightSpec = gl.getUniformLocation(program, id + "[" + i + "].specular");
         const pos = gl.getUniformLocation(program, id + "[" + i + "].position");
         const lightPosition = gl.getUniformLocation(program, "lightsPositions[" + i + "]");
-        gl.uniform3fv(lightAmb, lights[i].lightAmb);
-        gl.uniform3fv(lightDif, lights[i].lightDif);
-        gl.uniform3fv(lightSpec, lights[i].lightSpec);
+        gl.uniform3fv(lightAmb, normalizeLightArray(lights[i].lightAmb));
+        gl.uniform3fv(lightDif, normalizeLightArray(lights[i].lightDif));
+        gl.uniform3fv(lightSpec, normalizeLightArray(lights[i].lightSpec));
         gl.uniform4fv(pos, lights[i].position);
         gl.uniform4fv(lightPosition, lights[i].position);
     }
@@ -296,14 +305,14 @@ cameraFolder.add(visionVol, 'near', 0, 20).onChange(loadProjection);
 cameraFolder.add(visionVol, 'far', 0, 40).onChange(loadProjection);
 //camera eye position
 const eyeFolder = cameraFolder.addFolder('eye');
-eyeFolder.add(cameraPos, 'eyeX', 0, 10).name('x').onChange(loadView);
-eyeFolder.add(cameraPos, 'eyeY', 0, 10).name('y').onChange(loadView);
-eyeFolder.add(cameraPos, 'eyeZ', 0, 10).name('z').onChange(loadView);
+eyeFolder.add(cameraPos, 'eyeX', -10, 10).name('x').onChange(loadView);
+eyeFolder.add(cameraPos, 'eyeY', -10, 10).name('y').onChange(loadView);
+eyeFolder.add(cameraPos, 'eyeZ', -10, 10).name('z').onChange(loadView);
 //camera at position
 const atFolder = cameraFolder.addFolder('at');
-atFolder.add(cameraPos, 'atX', 0, 10).name('x').onChange(loadView);
-atFolder.add(cameraPos, 'atY', 0, 10).name('y').onChange(loadView);
-atFolder.add(cameraPos, 'atZ', 0, 10).name('z').onChange(loadView);
+atFolder.add(cameraPos, 'atX', -10, 10).name('x').onChange(loadView);
+atFolder.add(cameraPos, 'atY', -10, 10).name('y').onChange(loadView);
+atFolder.add(cameraPos, 'atZ', -10, 10).name('z').onChange(loadView);
 //camera up position
 const upFolder = cameraFolder.addFolder('up');
 
@@ -318,15 +327,22 @@ upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
 const lightsFolder = gui.addFolder('lights');
 //Spotlight type
 const light1Folder = lightsFolder.addFolder('light1');
+
 const position1Folder = light1Folder.addFolder('position');
 position1Folder.add(lights[0].position, '0', -10, 10).name('x').onChange(loadView);
 position1Folder.add(lights[0].position, '1', -10, 10).name('y').onChange(loadView);
 position1Folder.add(lights[0].position, '2', -10, 10).name('z').onChange(loadView);
 position1Folder.add(lights[0].position, '3', 0, 1).name('w').onChange(loadView);
 const intensities1Folter = light1Folder.addFolder('intensities');
+intensities1Folter.addColor(lights[0], 'lightAmb').name('ambient');// da um warning
+intensities1Folter.addColor(lights[0], 'lightDif').name('diffuse');// da um warning
+intensities1Folter.addColor(lights[0], 'lightSpec', 0, 200).name('specular');// da um warning
 const axis1Folder = light1Folder.addFolder('axis');
-
-
+axis1Folder.add(lights[0].axis, '0', -10, 10).name('x').onChange(loadView);
+axis1Folder.add(lights[0].axis, '1', -10, 10).name('y').onChange(loadView);
+axis1Folder.add(lights[0].axis, '2', -10, 10).name('z').onChange(loadView);
+light1Folder.add(lights[0], 'aperture', 0, 10000).name('aperture').onChange(loadView);
+light1Folder.add(lights[0], 'cutoff', 0, 10000).name('cutoff').onChange(loadView);
 //Change material characteristics
 const materialFolder = gui.addFolder('material');
 materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
