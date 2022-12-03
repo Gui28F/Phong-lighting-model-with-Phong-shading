@@ -6,8 +6,6 @@ uniform vec3 uColor;
 varying vec3 fPosition;
 varying vec3 fNormal;
 
-//uniform int MAX_LIGHTS;
-
 struct MaterialInfo {
     vec3 Ka;
     vec3 Kd;

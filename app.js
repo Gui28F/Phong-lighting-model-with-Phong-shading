@@ -1,7 +1,7 @@
 import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from "./libs/utils.js";
 import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, perspective, inverse, rotateX, normalMatrix } from "./libs/MV.js";
 import { modelView, loadMatrix, multRotationY, multScale, multRotationX, multRotationZ, pushMatrix, popMatrix, multTranslation } from "./libs/stack.js";
-import {GUI} from './libs/dat.gui.module.js';
+import { GUI } from './libs/dat.gui.module.js';
 import * as CYLINDER from './libs/objects/cylinder.js';
 import * as CUBE from './libs/objects/cube.js';
 import * as TORUS from './libs/objects/torus.js';
@@ -37,37 +37,37 @@ let lights = [
 ]
 
 let platformMaterial = {
-    materialAmb: vec3(1, 0, 0),
-    materialDif: vec3(1, 0, 0),
-    materialSpec: PLATFORM_COLOR,
+    materialAmb: vec3(255, 0, 0),
+    materialDif: vec3(255, 0, 0),
+    materialSpec: vec3(168.3,117.3, 71.4),
     shininess: 1
 }
 
 let cubeMaterial = {
-    materialAmb: vec3(1, 0, 0),
-    materialDif: vec3(1, 0, 0),
-    materialSpec: CUBE_COLOR,
+    materialAmb: vec3(255, 0, 0),
+    materialDif: vec3(255, 0, 0),
+    materialSpec: vec3(163.2, 48.45, 48.45),
     shininess: 1
 }
 
 let cylinderMaterial = {
-    materialAmb: vec3(1, 0, 0),
-    materialDif: vec3(1, 0, 0),
-    materialSpec: CYLINDER_COLOR,
+    materialAmb: vec3(255, 0, 0),
+    materialDif: vec3(255, 0, 0),
+    materialSpec: vec3(45.9, 140.25, 86.7),
     shininess: 1
 }
 
 let torusMaterial = {
-    materialAmb: vec3(0.0215, 0.1745, 0.0215),
-    materialDif: vec3(0.07568, 0.51424, 0.07568),
-    materialSpec: vec3(0.633, 0.727811, 0.633),
+    materialAmb: vec3(0.0215*255, 0.1745*255, 0.0215*255),
+    materialDif: vec3(0.07568*255, 0.51424*255, 0.07568*255),
+    materialSpec: vec3(33.25, 155.55, 0.),
     shininess: 5
 }
 
 let bunnyMaterial = {
-    materialAmb: vec3(0.2,0.1,0.1),
+    materialAmb: vec3(0.2, 0.1, 0.1),
     materialDif: vec3(0.2, 0.1, 0.1),
-    materialSpec: BUNNY_COLOR,
+    materialSpec: vec3(255, 204, 219.3),
     shininess: 0.1
 }
 
@@ -88,15 +88,18 @@ let cameraPos = {
     upX: 0, upY: 0, upZ: 0,
 }
 
+function normalizeArray(a) {
+    return [a[0] / 255, a[1] / 255, a[2] / 255];
+}
 function uploadObject(program, id, object) {
     gl.useProgram(program);
     const materialAmb = gl.getUniformLocation(program, id + ".Ka");
     const materialDif = gl.getUniformLocation(program, id + ".Kd");
     const materialSpe = gl.getUniformLocation(program, id + ".Ks");
     const shininess = gl.getUniformLocation(program, id + ".shininess");
-    gl.uniform3fv(materialAmb, object.materialAmb);
-    gl.uniform3fv(materialDif, object.materialDif);
-    gl.uniform3fv(materialSpe, object.materialSpec);
+    gl.uniform3fv(materialAmb, normalizeArray(object.materialAmb));
+    gl.uniform3fv(materialDif, normalizeArray(object.materialDif));
+    gl.uniform3fv(materialSpe, normalizeArray(object.materialSpec));
     gl.uniform1f(shininess, object.shininess);
 }
 function uploadMatrix(program, id, matrix) {
@@ -172,13 +175,13 @@ function uploadModelView() {
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
 }
 
-function turnCullFace(){
-    if(ocultFace.cullFace) gl.enable(gl.CULL_FACE);
+function turnCullFace() {
+    if (ocultFace.cullFace) gl.enable(gl.CULL_FACE);
     else gl.disable(gl.CULL_FACE);
 }
 
-function turnDepthBuffer(){
-    if(ocultFace.depthTest) gl.enable(gl.DEPTH_TEST);
+function turnDepthBuffer() {
+    if (ocultFace.depthTest) gl.enable(gl.DEPTH_TEST);
     else gl.disable(gl.DEPTH_TEST);
 }
 
@@ -267,7 +270,7 @@ y.addEventListener('input', function () {
 
 function loadView() {
     console.log(cameraPos.upX, cameraPos.upY, cameraPos.upZ)
-    mView = lookAt([cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ], 
+    mView = lookAt([cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ],
         [cameraPos.atX, cameraPos.atY, cameraPos.atZ], [cameraPos.upX, cameraPos.upY, cameraPos.upZ]);
     loadMatrix(mView);
 }
@@ -279,11 +282,11 @@ function loadProjection() {
 //Turn on/turn off ocult faces
 const gui = new GUI();
 const optionFolder = gui.addFolder('option');
-optionFolder.add(ocultFace, 'cullFace').name('backface culling').onChange(function(value) { 
+optionFolder.add(ocultFace, 'cullFace').name('backface culling').onChange(function (value) {
     ocultFace.cullFace = value;
     console.log(value);
 });
-optionFolder.add(ocultFace, 'depthTest').name('depth test').onChange(function(value) { 
+optionFolder.add(ocultFace, 'depthTest').name('depth test').onChange(function (value) {
     ocultFace.depthTest = value;
 });
 
@@ -324,11 +327,11 @@ const axis1Folder = light1Folder.addFolder('axis');
 //Change material characteristics
 const materialFolder = gui.addFolder('material');
 materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
-materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Kb');// da um warning
-materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ks');// da um warning
+materialFolder.addColor(bunnyMaterial, 'materialDif').name('Kd');// da um warning
+materialFolder.addColor(bunnyMaterial, 'materialSpec').name('Ks');// da um warning
 //materialFolder.add(bunnyMaterial, 'materialDif', vec3(0,0,0), vec3(255,255,255)).name('Kb');
 //materialFolder.add(bunnyMaterial, 'materialSpec', vec3(0,0,0), vec3(255,255,255)).name('Ks');
-//materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
+materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
 
 const urls = ["shader.vert", "shader.frag"];
 loadShadersFromURLS(urls).then(shaders => setup(shaders))
