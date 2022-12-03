@@ -1,6 +1,7 @@
 import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from "./libs/utils.js";
 import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, perspective, inverse, rotateX, normalMatrix } from "./libs/MV.js";
 import { modelView, loadMatrix, multRotationY, multScale, multRotationX, multRotationZ, pushMatrix, popMatrix, multTranslation } from "./libs/stack.js";
+import {GUI} from './libs/dat.gui.module.js';
 import * as CYLINDER from './libs/objects/cylinder.js';
 import * as CUBE from './libs/objects/cube.js';
 import * as TORUS from './libs/objects/torus.js';
@@ -70,6 +71,23 @@ let bunnyMaterial = {
     shininess: 0.1
 }
 
+let ocultFace = {
+    depthTest: true,
+    cullFace: false
+}
+
+let visionVol = {
+    fovy: 0,
+    near: 0,
+    far: 0
+}
+
+let cameraPos = {
+    eyeX: 0, eyeY: 0, eyeZ: 0,
+    atX: 0, atY: 0, atZ: 0,
+    upX: 0, upY: 0, upZ: 0,
+}
+
 function uploadObject(program, id, object) {
     gl.useProgram(program);
     const materialAmb = gl.getUniformLocation(program, id + ".Ka");
@@ -132,7 +150,9 @@ function setup(shaders) {
     CUBE.init(gl);
     TORUS.init(gl);
     BUNNY.init(gl);
-    gl.enable(gl.DEPTH_TEST);   // Enables Z-buffer depth test
+
+    //gl.enable(gl.DEPTH_TEST);   // Enables Z-buffer depth test
+    //gl.enable(gl.CULL_FACE);
 
     window.requestAnimationFrame(render);
 }
@@ -150,6 +170,16 @@ function resize_canvas(event) {
 
 function uploadModelView() {
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mModelView"), false, flatten(modelView()));
+}
+
+function turnCullFace(){
+    if(ocultFace.cullFace) gl.enable(gl.CULL_FACE);
+    else gl.disable(gl.CULL_FACE);
+}
+
+function turnDepthBuffer(){
+    if(ocultFace.depthTest) gl.enable(gl.DEPTH_TEST);
+    else gl.disable(gl.DEPTH_TEST);
 }
 
 function changeColor(color) {
@@ -220,6 +250,10 @@ function render() {
     gl.useProgram(program);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
     loadMatrix(mView);
+    turnCullFace();
+    turnDepthBuffer();
+
+    //mProjection = perspective(visionVol.fovy, aspect, visionVol.near, visionVol.far);
 }
 
 /*x.addEventListener('input', function () {
@@ -231,7 +265,64 @@ y.addEventListener('input', function () {
     mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
 })
 */
+function loadView() {
+    mView = lookAt([cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ], 
+        [cameraPos.atX, cameraPos.atY, cameraPos.atZ], [cameraPos.upX, cameraPos.upY, cameraPos.upZ]);
+    loadMatrix(mView);
+}
 
+function loadProjection() {
+    mProjection = perspective(visionVol.fovy, aspect, visionVol.near, visionVol.far);
+}
+
+//Turn on/turn off ocult faces
+const gui = new GUI();
+const optionFolder = gui.addFolder('option');
+optionFolder.add(ocultFace, 'cullFace').name('backface culling').onChange(function(value) { 
+    ocultFace.cullFace = value;
+    console.log(value);
+});
+optionFolder.add(ocultFace, 'depthTest').name('depth test').onChange(function(value) { 
+    ocultFace.depthTest = value;
+});
+
+//Manipulate camera position and orientation
+const cameraFolder = gui.addFolder('camera');
+cameraFolder.add(visionVol, 'fovy', 0, 100).onChange(loadProjection);
+cameraFolder.add(visionVol, 'near', 0, 20).onChange(loadProjection);
+cameraFolder.add(visionVol, 'far', 0, 40).onChange(loadProjection);
+//camera eye position
+const eyeFolder = cameraFolder.addFolder('eye');
+eyeFolder.add(cameraPos, 'eyeX', 0, 10).name('x').onChange(loadView);
+eyeFolder.add(cameraPos, 'eyeY', 0, 10).name('y').onChange(loadView);
+eyeFolder.add(cameraPos, 'eyeZ', 0, 10).name('z').onChange(loadView);
+//camera at position
+const atFolder = cameraFolder.addFolder('at');
+atFolder.add(cameraPos, 'atX', 0, 10).name('x').onChange(loadView);
+atFolder.add(cameraPos, 'atY', 0, 10).name('y').onChange(loadView);
+atFolder.add(cameraPos, 'atZ', 0, 10).name('z').onChange(loadView);
+//camera up position
+const upFolder = cameraFolder.addFolder('up');
+upFolder.add(cameraPos, 'upX', -1, 1).name('x').onChange(loadView);
+upFolder.add(cameraPos, 'upY', -1, 1).name('y').onChange(loadView);
+upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
+
+
+//Lights 
+const lightsFolder = gui.addFolder('lights');
+//Spotlight type
+const light1Folder = lightsFolder.addFolder('light1');
+const position1Folder = light1Folder.addFolder('position');
+const intensities1Folter = light1Folder.addFolder('intensities');
+const axis1Folder = light1Folder.addFolder('axis');
+
+
+//Change material characteristics
+const materialFolder = gui.addFolder('material');
+materialFolder.add(bunnyMaterial, 'materialAmb', vec3(0,0,0), vec3(255,255,255)).name('Ka');
+materialFolder.add(bunnyMaterial, 'materialDif', vec3(0,0,0), vec3(255,255,255)).name('Kb');
+materialFolder.add(bunnyMaterial, 'materialSpec', vec3(0,0,0), vec3(255,255,255)).name('Ks');
+materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
 
 const urls = ["shader.vert", "shader.frag"];
 loadShadersFromURLS(urls).then(shaders => setup(shaders))
