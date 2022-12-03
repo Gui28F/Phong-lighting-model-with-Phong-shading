@@ -42,7 +42,7 @@ vec3 ambientColor(){
         if(i == uNLights) break; 
         ambientColor+=uLights[i].ambient * uMaterial.Ka;
     }
-    return ambientColor;
+    return ambientColor*uColor;
 }
 
 vec3 diffuseColor(){

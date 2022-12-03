@@ -28,7 +28,7 @@ const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
-        position: vec4(0, 0, 10, 1),
+        position: vec4(0.0, 1.8, 1.3, 1.0),
         lightAmb: vec3(0.2, 0.2, 0.2),
         lightDif: vec3(0.7, 0.7, 0.7),
         lightSpec: vec3(1.0, 1.0, 1.0),
@@ -57,24 +57,24 @@ let cylinderMaterial = {
 }
 
 let torusMaterial = {
-    materialAmb: vec3(0, 1, 0),
-    materialDif: vec3(0, 1, 0),
-    materialSpec: TORUS_COLOR,
-    shininess: 3
+    materialAmb: vec3(0.0215, 0.1745, 0.0215),
+    materialDif: vec3(0.07568, 0.51424, 0.07568),
+    materialSpec: vec3(0.633, 0.727811, 0.633),
+    shininess: 5
 }
 
 let bunnyMaterial = {
-    materialAmb: vec3(0, 0, 0),
-    materialDif: vec3(0, 0, 0),
+    materialAmb: vec3(0.2,0.1,0.1),
+    materialDif: vec3(0.2, 0.1, 0.1),
     materialSpec: BUNNY_COLOR,
-    shininess: 0
+    shininess: 0.1
 }
 
 function uploadObject(program, id, object) {
     gl.useProgram(program);
     const materialAmb = gl.getUniformLocation(program, id + ".Ka");
-    const materialDif = gl.getUniformLocation(program, id + ".Ks");
-    const materialSpe = gl.getUniformLocation(program, id + ".Kd");
+    const materialDif = gl.getUniformLocation(program, id + ".Kd");
+    const materialSpe = gl.getUniformLocation(program, id + ".Ks");
     const shininess = gl.getUniformLocation(program, id + ".shininess");
     gl.uniform3fv(materialAmb, object.materialAmb);
     gl.uniform3fv(materialDif, object.materialDif);
