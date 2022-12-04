@@ -1,5 +1,6 @@
 precision highp float;
 precision highp int;
+const float PI = 3.141516;
 const int MAX_LIGHTS = 8;
 uniform vec3 uColor;
 
@@ -43,7 +44,7 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
      if(light.position.w == 0.0)
         l = light.position.xyz;
     else
-        l = light.position.xyz + V;//TODO
+        l = light.position.xyz - V;//TODO
     vec3 L = normalize(l);
     float diffuseFactor = max(dot(L, N), 0.0);
     vec3 H = normalize(L + V);
@@ -57,24 +58,13 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
 }
 
 vec3 calculateSpotLight(LightInfo light, vec3 N, vec3 V){
-    float diffuseFactor = 0.0;
-    vec3 spec = vec3(0.0);
-    vec3 l = vec3(0.,0.,0.);
-    if(light.position.w == 0.0)
-        l = light.position.xyz;
-    else
-        l = light.position.xyz + V;//TODO
-    vec3 L = normalize(l);
-    vec3 sd = normalize(vec3(-light.axis));  
-    if (dot(sd,L) > light.aperture) {
-        diffuseFactor = max(dot(N,L), 0.0);
-    }
-    if (diffuseFactor > 0.0) {
-        vec3 H = normalize(L + V);
-        float specularFactor = pow(max(dot(N, H), 0.0), uMaterial.shininess);
-        spec = specularFactor * light.specular * uMaterial.Ks;
-    }
-    return max(diffuseFactor * light.diffuse * uMaterial.Kd + spec, light.ambient* uMaterial.Ka);
+    vec3 ambient = light.ambient * uMaterial.Ka;
+    vec3 spotLightDir = light.axis;
+    vec3 fragmentDirToLight = light.position.xyz - fPosC;
+    float angle =  acos(dot(normalize(spotLightDir),normalize(-fragmentDirToLight)));
+    if( angle*180./PI <=light.aperture )
+        return calculateDirLight(light, N, V);
+    return ambient;
 }
 
 void main() {
