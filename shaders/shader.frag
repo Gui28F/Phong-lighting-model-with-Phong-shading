@@ -21,7 +21,9 @@ struct LightInfo {
 
     // Light geometry
     vec4 position;  // Position/direction of light (in camera coordinates)
-    // ...
+    vec3 axis;
+    float aperture;
+    float cutoff;
     //   additional fields
     // ...
 };

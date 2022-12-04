@@ -70,10 +70,10 @@ let torusMaterial = {
 }
 
 let bunnyMaterial = {
-    materialAmb: vec3(1*200, 0.80*200, 0.86*200),
-    materialDif: vec3(1*200, 0.80*200, 0.86*200),
-    materialSpec: vec3(1*200, 0.80*200, 0.86*200),
-    shininess: 1
+    materialAmb: vec3(230, 178, 178),
+    materialDif: vec3(235, 149, 215),
+    materialSpec: vec3(222, 154, 154),
+    shininess: 80
 }
 
 let ocultFace = {
@@ -88,17 +88,17 @@ let visionVol = {
 }
 
 let cameraPos = {
-    eyeX: 0, eyeY: 0, eyeZ: 0,
+    eyeX: 0, eyeY: VP_DISTANCE/4, eyeZ: VP_DISTANCE,
     atX: 0, atY: 0, atZ: 0,
-    upX: 0, upY: 0, upZ: 1,
+    upX: 0, upY: 1, upZ: 0,
 }
 
 function normalizeColorArray(a) {
-    return [a[0] / 255, a[1] / 255, a[2] / 255];
+    return vec3(a[0] / 255, a[1] / 255, a[2] / 255);
 }
 
 function normalizeLightArray(a) {
-    return [a[0] / 200, a[1] / 200, a[2] / 200];
+    return vec3(a[0] / 200, a[1] / 200, a[2] / 200);
 }
 function uploadObject(program, id, object) {
     gl.useProgram(program);
@@ -116,7 +116,11 @@ function uploadMatrix(program, id, matrix) {
     const m = gl.getUniformLocation(program, id);
     gl.uniformMatrix4fv(m, false, flatten(matrix));
 }
-
+/*intensity: 1,
+        axis: vec3(0, 0, -1),
+        aperture: 10,
+        cutoff: 10,
+    }*/
 function uploadLights(program, id, lights) {
     gl.useProgram(program);
     const uNLights = gl.getUniformLocation(program, "uNLights");
@@ -126,11 +130,17 @@ function uploadLights(program, id, lights) {
         const lightDif = gl.getUniformLocation(program, id + "[" + i + "].diffuse");
         const lightSpec = gl.getUniformLocation(program, id + "[" + i + "].specular");
         const pos = gl.getUniformLocation(program, id + "[" + i + "].position");
+        const axis = gl.getUniformLocation(program, id + "[" + i + "].axis");
+        const aperture = gl.getUniformLocation(program, id + "[" + i + "].aperture");
+        const cutoff = gl.getUniformLocation(program, id + "[" + i + "].cutoff");
         const lightPosition = gl.getUniformLocation(program, "lightsPositions[" + i + "]");
         gl.uniform3fv(lightAmb, normalizeLightArray(lights[i].lightAmb));
         gl.uniform3fv(lightDif, normalizeLightArray(lights[i].lightDif));
         gl.uniform3fv(lightSpec, normalizeLightArray(lights[i].lightSpec));
         gl.uniform4fv(pos, lights[i].position);
+        gl.uniform3fv(axis, lights[i].axis);
+        gl.uniform1f(aperture, lights[i].aperture);
+        gl.uniform1f(cutoff, lights[i].cutoff);
         gl.uniform4fv(lightPosition, lights[i].position);
     }
 }
@@ -336,13 +346,13 @@ position1Folder.add(lights[0].position, '3', 0, 1).name('w').onChange(loadView);
 const intensities1Folter = light1Folder.addFolder('intensities');
 intensities1Folter.addColor(lights[0], 'lightAmb').name('ambient');// da um warning
 intensities1Folter.addColor(lights[0], 'lightDif').name('diffuse');// da um warning
-intensities1Folter.addColor(lights[0], 'lightSpec', 0, 200).name('specular');// da um warning
+intensities1Folter.addColor(lights[0], 'lightSpec').name('specular');// da um warning
 const axis1Folder = light1Folder.addFolder('axis');
 axis1Folder.add(lights[0].axis, '0', -10, 10).name('x').onChange(loadView);
 axis1Folder.add(lights[0].axis, '1', -10, 10).name('y').onChange(loadView);
 axis1Folder.add(lights[0].axis, '2', -10, 10).name('z').onChange(loadView);
-light1Folder.add(lights[0], 'aperture', 0, 10000).name('aperture').onChange(loadView);
-light1Folder.add(lights[0], 'cutoff', 0, 10000).name('cutoff').onChange(loadView);
+light1Folder.add(lights[0], 'aperture', 0, 360).name('aperture').onChange(loadView);
+light1Folder.add(lights[0], 'cutoff', 0, 360).name('cutoff').onChange(loadView);
 //Change material characteristics
 const materialFolder = gui.addFolder('material');
 materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
