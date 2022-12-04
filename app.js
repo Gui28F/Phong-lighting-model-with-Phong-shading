@@ -34,7 +34,7 @@ let lights = [
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
         intensity: 1,
-        axis: vec3(0, 0, -1),
+        axis: vec3(0,-5,-10),
         aperture: 10,
         cutoff: 10,
     }

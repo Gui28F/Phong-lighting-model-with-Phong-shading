@@ -15,7 +15,7 @@ uniform int uNLights;
 varying vec3 fNormal;
 varying vec3 fLight;
 varying vec3 fViewer;
-
+varying vec3 fPosC;
 vec3 light(vec3 posC){
     vec3 light = vec3(0,0,0);
     for(int i = 0; i < MAX_LIGHTS; i++){
@@ -33,6 +33,7 @@ void main() {
     vec3 posC = (mModelView * vPosition).xyz;
     fLight = light(posC);
     fNormal = (mNormals * vNormal).xyz;
+    fPosC = posC;
     //if(prespective == 1)
         fViewer = -posC;
     //else fViewer = vec3(0,0,1);
