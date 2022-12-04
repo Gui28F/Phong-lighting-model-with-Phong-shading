@@ -42,30 +42,30 @@ let lights = [
 
 
 let platformMaterial = {
-    materialAmb: vec3(0.66*200, 0.46*200, 0.28*200),
-    materialDif: vec3(0.66*200, 0.46*200, 0.28*200),
-    materialSpec: vec3(0.66*200, 0.46*200, 0.28*200),
+    materialAmb: vec3(0.66*255, 0.46*255, 0.28*255),
+    materialDif: vec3(0.66*255, 0.46*255, 0.28*255),
+    materialSpec: vec3(0.66*255, 0.46*255, 0.28*255),
     shininess: 1
 }
 
 let cubeMaterial = {
-    materialAmb: vec3(0.64*200, 0.19*200, 0.19*200),
-    materialDif: vec3(0.64*200, 0.19*200, 0.19*200),
-    materialSpec: vec3(0.64*200, 0.19*200, 0.19*200),
+    materialAmb: vec3(0.64*255, 0.19*255, 0.19*255),
+    materialDif: vec3(0.64*255, 0.19*255, 0.19*255),
+    materialSpec: vec3(0.64*255, 0.19*255, 0.19*255),
     shininess: 1
 }
 
 let cylinderMaterial = {
-    materialAmb: vec3(0.18*200, 0.55*200, 0.34*200),
-    materialDif: vec3(0.18*200, 0.55*200, 0.34*200),
-    materialSpec: vec3(0.18*200, 0.55*200, 0.34*200),
+    materialAmb: vec3(0.18*255, 0.55*255, 0.34*255),
+    materialDif: vec3(0.18*255, 0.55*255, 0.34*255),
+    materialSpec: vec3(0.18*255, 0.55*255, 0.34*255),
     shininess: 1
 }
 
 let torusMaterial = {
-    materialAmb: vec3(0.0215*200, 0.1745*200, 0.0215*200),
-    materialDif: vec3(0.07568*200, 0.51424*200, 0.07568*200),
-    materialSpec: vec3(0.633*200, 0.727811*200, 0.633*200),
+    materialAmb: vec3(0.0215*255, 0.1745*255, 0.0215*255),
+    materialDif: vec3(0.07568*255, 0.51424*255, 0.07568*255),
+    materialSpec: vec3(0.633*255, 0.727811*255, 0.633*255),
     shininess: 5
 }
 
