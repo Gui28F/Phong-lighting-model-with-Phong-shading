@@ -29,15 +29,23 @@ const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
-        position: vec4(0.0, 0, 5, 1.0),
+        position: vec4(0.0, 3, 10, 1.0),
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
-        intensity: 1,
-        axis: vec3(0,0,-5),
+        axis: vec3(0,-1,-10),
         aperture: 10,
         cutoff: 10,
-    }
+    }/*,
+    {
+        position: vec4(-10.0, 0, -3, 1.0),
+        lightAmb: vec3(40, 40, 40),
+        lightDif: vec3(140, 140, 140),
+        lightSpec: vec3(200, 200, 200),
+        axis: vec3(10,0,3),
+        aperture: 10,
+        cutoff: 10,
+    }*/
 ]
 
 
@@ -82,9 +90,9 @@ let ocultFace = {
 }
 
 let visionVol = {
-    fovy: 0,
-    near: 0,
-    far: 0
+    fovy: 90,
+    near: 1,
+    far: 10
 }
 
 let cameraPos = {
@@ -134,14 +142,17 @@ function uploadLights(program, id, lights) {
         const aperture = gl.getUniformLocation(program, id + "[" + i + "].aperture");
         const cutoff = gl.getUniformLocation(program, id + "[" + i + "].cutoff");
         const lightPosition = gl.getUniformLocation(program, "lightsPositions[" + i + "]");
+        const view = gl.getUniformLocation(program, "mView");
+
         gl.uniform3fv(lightAmb, normalizeLightArray(lights[i].lightAmb));
         gl.uniform3fv(lightDif, normalizeLightArray(lights[i].lightDif));
         gl.uniform3fv(lightSpec, normalizeLightArray(lights[i].lightSpec));
-        gl.uniform4fv(pos,  lights[i].position);
+        gl.uniform4fv(pos,  mult(mView, lights[i].position));
         gl.uniform3fv(axis, lights[i].axis);
         gl.uniform1f(aperture, lights[i].aperture);
         gl.uniform1f(cutoff, lights[i].cutoff);
-        gl.uniform4fv(lightPosition,  lights[i].position);
+        gl.uniform4fv(lightPosition, mult(mView, lights[i].position));
+        gl.uniformMatrix4fv(view, false, flatten(mView));
     }
 }
 
@@ -267,11 +278,11 @@ function render() {
     time++;
     window.requestAnimationFrame(render);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    drawScene();
+    loadMatrix(mView);
     uploadLights(program, "uLights", lights)
+    drawScene();
     gl.useProgram(program);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
-    loadMatrix(mView);
     turnCullFace();
     turnDepthBuffer();
 

@@ -4,7 +4,6 @@ const float PI = 3.141516;
 const int MAX_LIGHTS = 8;
 uniform vec3 uColor;
 
-varying vec3 fPosition;
 varying vec3 fNormal;
 
 struct MaterialInfo {
@@ -40,7 +39,7 @@ varying vec3 fPosC;
 
 
 vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
-    vec3 l = vec3(0.,0.,0.);
+     vec3 l = vec3(0.,0.,0.);
      if(light.position.w == 0.0)
         l = light.position.xyz;
     else
@@ -60,10 +59,10 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
 vec3 calculateSpotLight(LightInfo light, vec3 N, vec3 V){
     vec3 ambient = light.ambient * uMaterial.Ka;
     vec3 spotLightDir = light.axis;
-    vec3 fragmentDirToLight = light.position.xyz - fPosC;
-    float angle =  acos(dot(normalize(spotLightDir),normalize(-fragmentDirToLight)));
-    if( angle*180./PI <=light.aperture )
-        return calculateDirLight(light, N, V);
+    //vec3 fragmentDirToLight = light.position.xyz - fPosC;
+    float angle =  acos(dot(normalize(-spotLightDir),normalize(fViewer)));
+    if( angle*180./PI <=light.aperture)
+        return max(ambient, pow(cos(angle), light.cutoff) * calculateDirLight(light, N, V));
     return ambient;
 }
 
