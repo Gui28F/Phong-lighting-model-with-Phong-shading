@@ -1,5 +1,5 @@
 import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from "./libs/utils.js";
-import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, perspective, inverse, rotateX, normalMatrix } from "./libs/MV.js";
+import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, perspective, inverse, rotateX, normalMatrix, transpose } from "./libs/MV.js";
 import { modelView, loadMatrix, multRotationY, multScale, multRotationX, multRotationZ, pushMatrix, popMatrix, multTranslation } from "./libs/stack.js";
 import { GUI } from './libs/dat.gui.module.js';
 import * as CYLINDER from './libs/objects/cylinder.js';
@@ -33,7 +33,7 @@ let lights = [
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
-        axis: vec3(0,-1,-10),
+        axis: vec4(0, -1, -10,1),
         aperture: 10,
         cutoff: 10,
     }/*,
@@ -50,30 +50,30 @@ let lights = [
 
 
 let platformMaterial = {
-    materialAmb: vec3(0.66*255, 0.46*255, 0.28*255),
-    materialDif: vec3(0.66*255, 0.46*255, 0.28*255),
-    materialSpec: vec3(0.66*255, 0.46*255, 0.28*255),
+    materialAmb: vec3(0.66 * 255, 0.46 * 255, 0.28 * 255),
+    materialDif: vec3(0.66 * 255, 0.46 * 255, 0.28 * 255),
+    materialSpec: vec3(0.66 * 255, 0.46 * 255, 0.28 * 255),
     shininess: 1
 }
 
 let cubeMaterial = {
-    materialAmb: vec3(0.64*255, 0.19*255, 0.19*255),
-    materialDif: vec3(0.64*255, 0.19*255, 0.19*255),
-    materialSpec: vec3(0.64*255, 0.19*255, 0.19*255),
+    materialAmb: vec3(0.64 * 255, 0.19 * 255, 0.19 * 255),
+    materialDif: vec3(0.64 * 255, 0.19 * 255, 0.19 * 255),
+    materialSpec: vec3(0.64 * 255, 0.19 * 255, 0.19 * 255),
     shininess: 1
 }
 
 let cylinderMaterial = {
-    materialAmb: vec3(0.18*255, 0.55*255, 0.34*255),
-    materialDif: vec3(0.18*255, 0.55*255, 0.34*255),
-    materialSpec: vec3(0.18*255, 0.55*255, 0.34*255),
+    materialAmb: vec3(0.18 * 255, 0.55 * 255, 0.34 * 255),
+    materialDif: vec3(0.18 * 255, 0.55 * 255, 0.34 * 255),
+    materialSpec: vec3(0.18 * 255, 0.55 * 255, 0.34 * 255),
     shininess: 1
 }
 
 let torusMaterial = {
-    materialAmb: vec3(0.0215*255, 0.1745*255, 0.0215*255),
-    materialDif: vec3(0.07568*255, 0.51424*255, 0.07568*255),
-    materialSpec: vec3(0.633*255, 0.727811*255, 0.633*255),
+    materialAmb: vec3(0.0215 * 255, 0.1745 * 255, 0.0215 * 255),
+    materialDif: vec3(0.07568 * 255, 0.51424 * 255, 0.07568 * 255),
+    materialSpec: vec3(0.633 * 255, 0.727811 * 255, 0.633 * 255),
     shininess: 5
 }
 
@@ -96,7 +96,7 @@ let visionVol = {
 }
 
 let cameraPos = {
-    eyeX: 0, eyeY: VP_DISTANCE/4, eyeZ: VP_DISTANCE,
+    eyeX: 0, eyeY: VP_DISTANCE / 4, eyeZ: VP_DISTANCE,
     atX: 0, atY: 0, atZ: 0,
     upX: 0, upY: 1, upZ: 0,
 }
@@ -147,8 +147,8 @@ function uploadLights(program, id, lights) {
         gl.uniform3fv(lightAmb, normalizeLightArray(lights[i].lightAmb));
         gl.uniform3fv(lightDif, normalizeLightArray(lights[i].lightDif));
         gl.uniform3fv(lightSpec, normalizeLightArray(lights[i].lightSpec));
-        gl.uniform4fv(pos,  mult(mView, lights[i].position));
-        gl.uniform3fv(axis, lights[i].axis);
+        gl.uniform4fv(pos, mult(mView, lights[i].position));
+        gl.uniform4fv(axis, mult(inverse(transpose(mView)), lights[i].axis));
         gl.uniform1f(aperture, lights[i].aperture);
         gl.uniform1f(cutoff, lights[i].cutoff);
         gl.uniform4fv(lightPosition, mult(mView, lights[i].position));
