@@ -1,5 +1,5 @@
 import { buildProgramFromSources, loadShadersFromURLS, setupWebGL } from "./libs/utils.js";
-import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, perspective, inverse, rotateX, normalMatrix, transpose } from "./libs/MV.js";
+import { ortho, lookAt, flatten, vec3, vec4, mult, rotateY, rotateZ, perspective, inverse, rotateX, normalMatrix, transpose, subtract, length } from "./libs/MV.js";
 import { modelView, loadMatrix, multRotationY, multScale, multRotationX, multRotationZ, pushMatrix, popMatrix, multTranslation } from "./libs/stack.js";
 import { GUI } from './libs/dat.gui.module.js';
 import * as CYLINDER from './libs/objects/cylinder.js';
@@ -21,6 +21,9 @@ const canvas = document.getElementById("gl-canvas");
 let aspect = canvas.width / canvas.height;
 let program;
 
+let dx = 0;
+let dy = 0;
+let initialPos;
 const PLATFORM_COLOR = [0.66, 0.46, 0.28];
 const CYLINDER_COLOR = [0.18, 0.55, 0.34];
 const CUBE_COLOR = [0.64, 0.19, 0.19];
@@ -29,30 +32,31 @@ const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
-        position: vec4(0, 0, 10, 1.0),
+        position: vec4(2.0, 0, 20, 1.0),
+        lightAmb: vec3(40, 40, 40),
+        lightDif: vec3(140, 140, 140),
+        lightSpec: vec3(255, 255, 255),
+        axis: vec4(0, -1, -10, 1),
+        aperture: 5,
+        cutoff: 10,
+    },
+    /*{
+        position: vec4(0, 2, 0, 1.0),
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
         axis: vec4(1,0,0,1),
         aperture: -1,
         cutoff: 1,
-    },{
-        position: vec4(0.0, 3, 10, 1.0),
+    },*/{
+        position: vec4(0.0, 1, 0, .0),
         lightAmb: vec3(40, 40, 40),
-        lightDif: vec3(140, 140, 140),
-        lightSpec: vec3(200, 200, 200),
-        axis: vec4(0, -1, -10,1),
-        aperture: 10,
+        lightDif: vec3(70, 70, 70),
+        lightSpec: vec3(100, 100, 100),
+        axis: vec4(0, -1, -10, 1),
+        aperture: -1,
         cutoff: 10,
-    }/*,{
-        position: vec4(0.0, 3, 0, .0),
-        lightAmb: vec3(40, 40, 40),
-        lightDif: vec3(140, 140, 140),
-        lightSpec: vec3(200, 200, 200),
-        axis: vec4(0, -1, -10,1),
-        aperture: 10,
-        cutoff: 10,
-    },*/
+    }
 ]
 
 
@@ -78,17 +82,17 @@ let cylinderMaterial = {
 }
 
 let torusMaterial = {
-    materialAmb: vec3(0.0215 * 255, 0.1745 * 255, 0.0215 * 255),
+    materialAmb: vec3(0.0215 * 255, 0.8745 * 255, 0.0215 * 255),
     materialDif: vec3(0.07568 * 255, 0.51424 * 255, 0.07568 * 255),
     materialSpec: vec3(0.633 * 255, 0.727811 * 255, 0.633 * 255),
-    shininess: 5
+    shininess: 255
 }
 
 let bunnyMaterial = {
     materialAmb: vec3(230, 178, 178),
     materialDif: vec3(235, 149, 215),
     materialSpec: vec3(222, 154, 154),
-    shininess: 80
+    shininess: 255,
 }
 
 let ocultFace = {
@@ -107,6 +111,40 @@ let cameraPos = {
     atX: 0, atY: 0, atZ: 0,
     upX: 0, upY: 1, upZ: 0,
 }
+
+let p1, mousedown, thetaI, phiI, dTheta, dPhi;
+canvas.addEventListener("mousedown", function (event) {
+    mousedown = true;
+    p1 = [event.offsetX, event.offsetY];
+    let v = subtract(vec3(cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ), vec3(cameraPos.atX, cameraPos.atY, cameraPos.atZ));
+    let r = length(v);
+    phiI = Math.asin(v[1] / r);
+    thetaI = Math.asin(v[0] / (r * Math.cos(phiI)));
+    if (v[2] < 0) thetaI = Math.PI - thetaI;
+});
+
+canvas.addEventListener("mousemove", function (event) {
+    if (mousedown) {
+        const p2 = [event.offsetX, event.offsetY];
+        dTheta = p2[0] - p1[0];
+        dPhi = p2[1] - p1[1];
+        let v = subtract(vec3(cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ), vec3(cameraPos.atX, cameraPos.atY, cameraPos.atZ));
+        let r = length(v);
+        let theta = thetaI - dTheta/canvas.width;
+        let phi = phiI + dPhi / canvas.height;
+        phi = Math.min(phi, Math.max(phi, -Math.PI / 2), Math.PI / 2);
+        cameraPos.eyeX = cameraPos.atX + r * Math.sin(theta) * Math.cos(phi);
+        cameraPos.eyeY = cameraPos.atY + r * Math.sin(phi);
+        cameraPos.eyeZ = cameraPos.atZ + r * Math.cos(theta) * Math.cos(phi);
+        loadView();
+    }
+});
+
+canvas.addEventListener("mouseup", function (event) {
+    mousedown = false;
+ 
+    
+})
 
 function normalizeColorArray(a) {
     return vec3(a[0] / 255, a[1] / 255, a[2] / 255);
@@ -149,17 +187,18 @@ function uploadLights(program, id, lights) {
         const aperture = gl.getUniformLocation(program, id + "[" + i + "].aperture");
         const cutoff = gl.getUniformLocation(program, id + "[" + i + "].cutoff");
         const lightPosition = gl.getUniformLocation(program, "lightsPositions[" + i + "]");
-        const view = gl.getUniformLocation(program, "mView");
 
-        gl.uniform3fv(lightAmb, normalizeLightArray(lights[i].lightAmb));
-        gl.uniform3fv(lightDif, normalizeLightArray(lights[i].lightDif));
-        gl.uniform3fv(lightSpec, normalizeLightArray(lights[i].lightSpec));
-        gl.uniform4fv(pos, mult(mView, lights[i].position));
-        gl.uniform4fv(axis, mult(inverse(transpose(mView)), lights[i].axis));
+        gl.uniform3fv(lightAmb, normalizeColorArray(lights[i].lightAmb));
+        gl.uniform3fv(lightDif, normalizeColorArray(lights[i].lightDif));
+        gl.uniform3fv(lightSpec, normalizeColorArray(lights[i].lightSpec));
+        //gl.uniform4fv(pos, mult(mView, lights[i].position));
+        //gl.uniform4fv(axis, mult(inverse(transpose(mView)), lights[i].axis));
+        gl.uniform4fv(pos, lights[i].position);
+        gl.uniform4fv(axis, lights[i].axis);
         gl.uniform1f(aperture, lights[i].aperture);
         gl.uniform1f(cutoff, lights[i].cutoff);
-        gl.uniform4fv(lightPosition, mult(mView, lights[i].position));
-        gl.uniformMatrix4fv(view, false, flatten(mView));
+        //gl.uniform4fv(lightPosition, mult(mView, lights[i].position));
+        gl.uniform4fv(lightPosition, lights[i].position);
     }
 }
 

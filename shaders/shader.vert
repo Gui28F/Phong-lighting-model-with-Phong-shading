@@ -11,7 +11,6 @@ uniform mat4 mModelView;
 uniform mat4 mNormals;
 uniform mat4 mProjection;
 uniform int uNLights; 
-uniform mat4 mView;
 
 varying vec3 fNormal;
 varying vec3 fLight;

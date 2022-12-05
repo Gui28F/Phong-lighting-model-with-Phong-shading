@@ -42,8 +42,8 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
      if(light.position.w == 0.0)
         l = light.position.xyz;
     else
-        l = light.position.xyz + V;//TODO
-    vec3 L = normalize(l);
+        l = light.position.xyz - fPosC;//TODO
+    vec3 L = normalize(l);//TODO usar o l ou fViewer
     float diffuseFactor = max(dot(L, N), 0.0);
     vec3 R = normalize(reflect(-L, N));
     float specularFactor = pow(max(dot(R, V), 0.0), uMaterial.shininess);
@@ -58,7 +58,7 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
 vec3 calculateSpotLight(LightInfo light, vec3 N, vec3 V){
     vec3 ambient = light.ambient * uMaterial.Ka;
     vec3 spotLightDir = light.axis.xyz;
-   vec3 fragmentDirToLight = light.position.xyz - fPosC;
+    vec3 fragmentDirToLight = light.position.xyz - fPosC;
     float angle =  acos(dot(normalize(spotLightDir),normalize(-fragmentDirToLight)));
     if( angle*180./PI <=light.aperture)
         return max(ambient, pow(cos(angle), light.cutoff) * calculateDirLight(light, N, V));
