@@ -53,7 +53,7 @@ let lights = [
     },
     {
         on: true,
-        position: vec4(2.0, 0, 20, 1.0),
+        position: vec4(2.0, 1, 20, 1.0),
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(255, 255, 255),
@@ -154,9 +154,6 @@ function normalizeColorArray(a) {
     return vec3(a[0] / 255, a[1] / 255, a[2] / 255);
 }
 
-function normalizeLightArray(a) {
-    return vec3(a[0] / 200, a[1] / 200, a[2] / 200);
-}
 function uploadObject(program, id, object) {
     gl.useProgram(program);
     const materialAmb = gl.getUniformLocation(program, id + ".Ka");
@@ -401,8 +398,8 @@ const lightsFolder = gui.addFolder('lights');
 lightsFolder.add(lights[0], 'on').name('Pontual switch').onChange(function(value){
     if(value) {
         lights[0].lightAmb = vec3(40, 40, 40);
-        lights[0].lightAmb = vec3(140, 140, 140)
-        lights[0].lightAmb = vec3(200, 200, 200);
+        lights[0].lightDif = vec3(70, 70, 70)
+        lights[0].lightSpec = vec3(100, 100, 100);
     }
     else{
         lights[0].lightAmb = vec3(0, 0, 0);
