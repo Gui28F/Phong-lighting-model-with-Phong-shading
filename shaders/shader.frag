@@ -83,7 +83,10 @@ void main() {
     vec3 result = vec3(0.,0.,0.);
     for(int i = 0; i < MAX_LIGHTS; i++){
         if(i == uNLights) break; 
-        result += calculateSpotLight(uLights[i], N, V);
+        if(uLights[i].aperture > -1.)
+            result += calculateSpotLight(uLights[i], N, V);
+        else
+            result += calculateDirLight(uLights[i], N, V);
     }
     gl_FragColor = vec4(result, 1.0);
     //gl_FragColor = vec4( uMaterial.Kd, 1.0);

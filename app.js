@@ -29,6 +29,14 @@ const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
+        position: vec4(0, 0, 10, 1.0),
+        lightAmb: vec3(40, 40, 40),
+        lightDif: vec3(140, 140, 140),
+        lightSpec: vec3(200, 200, 200),
+        axis: vec4(1,0,0,1),
+        aperture: -1,
+        cutoff: 1,
+    },{
         position: vec4(0.0, 3, 10, 1.0),
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
@@ -36,16 +44,15 @@ let lights = [
         axis: vec4(0, -1, -10,1),
         aperture: 10,
         cutoff: 10,
-    }/*,
-    {
-        position: vec4(-10.0, 0, -3, 1.0),
+    }/*,{
+        position: vec4(0.0, 3, 0, .0),
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
-        axis: vec3(10,0,3),
-        aperture: 90,
-        cutoff: 1,
-    }*/
+        axis: vec4(0, -1, -10,1),
+        aperture: 10,
+        cutoff: 10,
+    },*/
 ]
 
 
