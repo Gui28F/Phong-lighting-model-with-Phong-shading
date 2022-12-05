@@ -58,8 +58,8 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
 vec3 calculateSpotLight(LightInfo light, vec3 N, vec3 V){
     vec3 ambient = light.ambient * uMaterial.Ka;
     vec3 spotLightDir = light.axis.xyz;
-    vec3 fragmentDirToLight = light.position.xyz - fPosC;
-    float angle =  acos(dot(normalize(-spotLightDir),normalize(fragmentDirToLight)));
+   vec3 fragmentDirToLight = light.position.xyz - fPosC;
+    float angle =  acos(dot(normalize(spotLightDir),normalize(-fragmentDirToLight)));
     if( angle*180./PI <=light.aperture)
         return max(ambient, pow(cos(angle), light.cutoff) * calculateDirLight(light, N, V));
     return ambient;

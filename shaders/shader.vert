@@ -31,7 +31,7 @@ vec3 light(vec3 posC){
 
 void main() {
     gl_Position = mProjection * mModelView * vPosition;
-    vec3 posC = (mView * vPosition).xyz;
+    vec3 posC = (mModelView * vPosition).xyz;
     fLight = light(posC);
     fNormal = (mNormals * vNormal).xyz;
     fPosC = posC;
