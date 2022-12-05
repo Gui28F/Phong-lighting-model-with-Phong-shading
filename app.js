@@ -43,8 +43,8 @@ let lights = [
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
         axis: vec3(10,0,3),
-        aperture: 10,
-        cutoff: 10,
+        aperture: 90,
+        cutoff: 1,
     }*/
 ]
 
@@ -363,7 +363,7 @@ axis1Folder.add(lights[0].axis, '0', -10, 10).name('x').onChange(loadView);
 axis1Folder.add(lights[0].axis, '1', -10, 10).name('y').onChange(loadView);
 axis1Folder.add(lights[0].axis, '2', -10, 10).name('z').onChange(loadView);
 light1Folder.add(lights[0], 'aperture', 0, 360).name('aperture').onChange(loadView);
-light1Folder.add(lights[0], 'cutoff', 0, 360).name('cutoff').onChange(loadView);
+light1Folder.add(lights[0], 'cutoff', 0, 100).name('cutoff').onChange(loadView);
 //Change material characteristics
 const materialFolder = gui.addFolder('material');
 materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
