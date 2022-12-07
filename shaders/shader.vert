@@ -2,7 +2,7 @@ precision highp float;
 precision highp int;
 const int MAX_LIGHTS = 8; //TODO
 
-uniform int prespective; //TODO
+uniform int perspective; //TODO
 
 uniform vec4 lightsPositions[MAX_LIGHTS];
 attribute vec4 vPosition;
@@ -16,6 +16,8 @@ varying vec3 fNormal;
 varying vec3 fLight;
 varying vec3 fViewer;
 varying vec3 fPosC;
+
+
 vec3 light(vec3 posC){
     vec3 light = vec3(0,0,0);
     for(int i = 0; i < MAX_LIGHTS; i++){
@@ -34,7 +36,8 @@ void main() {
     fLight = light(posC);
     fNormal = (mNormals * vNormal).xyz;
     fPosC = posC;
-    //if(prespective == 1)
-        fViewer = -posC;
-    //else fViewer = vec3(0,0,1);
+    //if(perspective == 1)
+    fViewer = -posC;
+/*    else 
+        fViewer = vec3(0,0,1);*/
 }

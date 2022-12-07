@@ -68,18 +68,6 @@ vec3 calculateSpotLight(LightInfo light, vec3 N, vec3 V){
 void main() {
     vec3 V = normalize(fViewer);
     vec3 N = normalize(fNormal);
-    /*
-    vec3 L = normalize(fLight);
-    vec3 H = normalize(L + V);
-
-    float diffuseFactor = max(dot(L, N), 0.0);
-    vec3 diffuse = diffuseFactor * diffuseColor();
-    float specularFactor = pow(max(dot(N, H), 0.0), uMaterial.shininess);
-    vec3 specular = specularFactor * specularColor();
-
-    if(dot(L, N) < 0.0)
-        specular = vec3(0.0,0.0,0.0);
-        */
     vec3 result = vec3(0.,0.,0.);
     for(int i = 0; i < MAX_LIGHTS; i++){
         if(i == uNLights) break; 
@@ -89,5 +77,4 @@ void main() {
             result += calculateDirLight(uLights[i], N, V);
     }
     gl_FragColor = vec4(result, 1.0);
-    //gl_FragColor = vec4( uMaterial.Kd, 1.0);
 }

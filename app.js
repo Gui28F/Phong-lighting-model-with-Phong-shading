@@ -10,7 +10,6 @@ import * as BUNNY from './libs/objects/bunny.js';
 
 /** @type WebGLRenderingContext */
 let gl;
-let time = 0;
 let mode;               // Drawing mode (gl.LINES or gl.TRIANGLES)
 const VP_DISTANCE = 4;
 let uColor;
@@ -21,9 +20,6 @@ const canvas = document.getElementById("gl-canvas");
 let aspect = canvas.width / canvas.height;
 let program;
 
-let dx = 0;
-let dy = 0;
-let initialPos;
 const PLATFORM_COLOR = [0.66, 0.46, 0.28];
 const CYLINDER_COLOR = [0.18, 0.55, 0.34];
 const CUBE_COLOR = [0.64, 0.19, 0.19];
@@ -106,12 +102,12 @@ let ocultFace = {
 
 let visionVol = {
     fovy: 90,
-    near: 1,
+    near: 0.1,
     far: 10
 }
 
 let cameraPos = {
-    eyeX: 0, eyeY: VP_DISTANCE / 4, eyeZ: VP_DISTANCE,
+    eyeX: 0, eyeY: VP_DISTANCE/2, eyeZ: 1.8*VP_DISTANCE,
     atX: 0, atY: 0, atZ: 0,
     upX: 0, upY: 1, upZ: 0,
 }
@@ -145,9 +141,7 @@ canvas.addEventListener("mousemove", function (event) {
 });
 
 canvas.addEventListener("mouseup", function (event) {
-    mousedown = false;
- 
-    
+    mousedown = false;    
 })
 
 function normalizeColorArray(a) {
@@ -165,16 +159,13 @@ function uploadObject(program, id, object) {
     gl.uniform3fv(materialSpe, normalizeColorArray(object.materialSpec));
     gl.uniform1f(shininess, object.shininess);
 }
+
 function uploadMatrix(program, id, matrix) {
     gl.useProgram(program);
     const m = gl.getUniformLocation(program, id);
     gl.uniformMatrix4fv(m, false, flatten(matrix));
 }
-/*intensity: 1,
-        axis: vec3(0, 0, -1),
-        aperture: 10,
-        cutoff: 10,
-    }*/
+
 function uploadLights(program, id, lights) {
     gl.useProgram(program);
     const uNLights = gl.getUniformLocation(program, "uNLights");
@@ -192,13 +183,10 @@ function uploadLights(program, id, lights) {
         gl.uniform3fv(lightAmb, normalizeColorArray(lights[i].lightAmb));
         gl.uniform3fv(lightDif, normalizeColorArray(lights[i].lightDif));
         gl.uniform3fv(lightSpec, normalizeColorArray(lights[i].lightSpec));
-        //gl.uniform4fv(pos, mult(mView, lights[i].position));
-        //gl.uniform4fv(axis, mult(inverse(transpose(mView)), lights[i].axis));
         gl.uniform4fv(pos, lights[i].position);
         gl.uniform4fv(axis, lights[i].axis);
         gl.uniform1f(aperture, lights[i].aperture);
         gl.uniform1f(cutoff, lights[i].cutoff);
-        //gl.uniform4fv(lightPosition, mult(mView, lights[i].position));
         gl.uniform4fv(lightPosition, lights[i].position);
     }
 }
@@ -207,11 +195,15 @@ function setup(shaders) {
     gl = setupWebGL(canvas);
     program = buildProgramFromSources(gl, shaders["shader.vert"], shaders["shader.frag"]);
     uColor = gl.getUniformLocation(program, "uColor")
-    mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
-    mView = lookAt([0, VP_DISTANCE / 4, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
-    loadMatrix(mView);
-    mode = gl.TRIANGLES;
     resize_canvas();
+    //mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
+   // mView = lookAt([0, VP_DISTANCE / 4, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
+    //loadMatrix(mView);
+    loadView();
+    loadProjection();
+    
+    mode = gl.TRIANGLES;
+
     window.addEventListener("resize", resize_canvas);
 
     document.onkeydown = function (event) {
@@ -230,10 +222,6 @@ function setup(shaders) {
     CUBE.init(gl);
     TORUS.init(gl);
     BUNNY.init(gl);
-
-    //gl.enable(gl.DEPTH_TEST);   // Enables Z-buffer depth test
-    //gl.enable(gl.CULL_FACE);
-
     window.requestAnimationFrame(render);
 }
 
@@ -245,7 +233,7 @@ function resize_canvas(event) {
     aspect = canvas.width / canvas.height;
 
     gl.viewport(0, 0, canvas.width, canvas.height);
-    mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
+    //mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
 }
 
 function uploadModelView() {
@@ -322,7 +310,6 @@ function drawScene() {
 }
 
 function render() {
-    time++;
     window.requestAnimationFrame(render);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     loadMatrix(mView);
@@ -332,18 +319,7 @@ function render() {
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
     turnCullFace();
     turnDepthBuffer();
-
-    //mProjection = perspective(visionVol.fovy, aspect, visionVol.near, visionVol.far);
 }
-
-/*x.addEventListener('input', function () {
-    mView = lookAt([0, 0, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
-    mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
-})
-y.addEventListener('input', function () {
-    mView = lookAt([0, 0, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
-    mView = mult(mult(mView, rotateX(x.value)), rotateY(y.value));
-})*/
 
 function loadView() {
     mView = lookAt([cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ],
@@ -355,13 +331,11 @@ function loadProjection() {
     mProjection = perspective(visionVol.fovy, aspect, visionVol.near, visionVol.far);
 }
 
-
 //Turn on/turn off ocult faces
 const gui = new GUI();
 const optionFolder = gui.addFolder('option');
 optionFolder.add(ocultFace, 'cullFace').name('backface culling').onChange(function (value) {
     ocultFace.cullFace = value;
-    console.log(value);
 });
 optionFolder.add(ocultFace, 'depthTest').name('depth test').onChange(function (value) {
     ocultFace.depthTest = value;
@@ -385,7 +359,6 @@ atFolder.add(cameraPos, 'atY', -10, 10).name('y').onChange(loadView);
 atFolder.add(cameraPos, 'atZ', -10, 10).name('z').onChange(loadView);
 //camera up position
 const upFolder = cameraFolder.addFolder('up');
-
 upFolder.add(cameraPos, 'upX', -1, 1).name('x').onChange(loadView);
 upFolder.add(cameraPos, 'upY', -1, 1).name('y').onChange(loadView);
 upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
