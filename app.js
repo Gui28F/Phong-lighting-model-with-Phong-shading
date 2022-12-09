@@ -33,7 +33,7 @@ let lights = [
         lightAmb: vec3(40, 40, 40),
         lightDif: vec3(140, 140, 140),
         lightSpec: vec3(200, 200, 200),
-        axis: vec4(1,0,0,1),
+        axis: vec4(1, 0, 0, 1),
         aperture: -1,
         cutoff: 1,
     },
@@ -49,11 +49,11 @@ let lights = [
     },
     {
         on: true,
-        position: vec4(2.0, 1, 20, 1.0),
+        position: vec4(2.0, 3, 20, 1.0),
         lightAmb: vec3(40, 40, 40),
-        lightDif: vec3(140, 140, 140),
+        lightDif: vec3(80, 80, 80),
         lightSpec: vec3(255, 255, 255),
-        axis: vec4(0, -1, -10, 1),
+        axis: vec4(-0, -1, -8, 1),
         aperture: 5,
         cutoff: 10,
     },
@@ -84,7 +84,7 @@ let cylinderMaterial = {
 let torusMaterial = {
     materialAmb: vec3(0.0215 * 255, 0.8745 * 255, 0.0215 * 255),
     materialDif: vec3(0.07568 * 255, 0.51424 * 255, 0.07568 * 255),
-    materialSpec: vec3(0.633 * 255, 0.727811 * 255, 0.633 * 255),
+    materialSpec: vec3(1 * 255, .5 * 255, 0.5 * 255),
     shininess: 255
 }
 
@@ -103,11 +103,11 @@ let ocultFace = {
 let visionVol = {
     fovy: 90,
     near: 0.1,
-    far: 10
+    far: 30
 }
 
 let cameraPos = {
-    eyeX: 0, eyeY: VP_DISTANCE/2, eyeZ: 1.8*VP_DISTANCE,
+    eyeX: 0, eyeY: VP_DISTANCE / 2, eyeZ: 1.8 * VP_DISTANCE,
     atX: 0, atY: 0, atZ: 0,
     upX: 0, upY: 1, upZ: 0,
 }
@@ -130,7 +130,7 @@ canvas.addEventListener("mousemove", function (event) {
         dPhi = p2[1] - p1[1];
         let v = subtract(vec3(cameraPos.eyeX, cameraPos.eyeY, cameraPos.eyeZ), vec3(cameraPos.atX, cameraPos.atY, cameraPos.atZ));
         let r = length(v);
-        let theta = thetaI - dTheta/canvas.width;
+        let theta = thetaI - dTheta / canvas.width;
         let phi = phiI + dPhi / canvas.height;
         phi = Math.min(phi, Math.max(phi, -Math.PI / 2), Math.PI / 2);
         cameraPos.eyeX = cameraPos.atX + r * Math.sin(theta) * Math.cos(phi);
@@ -141,7 +141,7 @@ canvas.addEventListener("mousemove", function (event) {
 });
 
 canvas.addEventListener("mouseup", function (event) {
-    mousedown = false;    
+    mousedown = false;
 })
 
 function normalizeColorArray(a) {
@@ -196,12 +196,9 @@ function setup(shaders) {
     program = buildProgramFromSources(gl, shaders["shader.vert"], shaders["shader.frag"]);
     uColor = gl.getUniformLocation(program, "uColor")
     resize_canvas();
-    //mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
-   // mView = lookAt([0, VP_DISTANCE / 4, VP_DISTANCE], [0, 0, 0], [0, 1, 0]);
-    //loadMatrix(mView);
     loadView();
     loadProjection();
-    
+
     mode = gl.TRIANGLES;
 
     window.addEventListener("resize", resize_canvas);
@@ -233,7 +230,6 @@ function resize_canvas(event) {
     aspect = canvas.width / canvas.height;
 
     gl.viewport(0, 0, canvas.width, canvas.height);
-    //mProjection = ortho(-VP_DISTANCE * aspect, VP_DISTANCE * aspect, -VP_DISTANCE, VP_DISTANCE, -3 * VP_DISTANCE, 3 * VP_DISTANCE);
 }
 
 function uploadModelView() {
@@ -241,8 +237,11 @@ function uploadModelView() {
 }
 
 function turnCullFace() {
-    if (ocultFace.cullFace) gl.enable(gl.CULL_FACE);
-    else gl.disable(gl.CULL_FACE);
+    if (ocultFace.cullFace) {
+        gl.enable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK)
+    } else gl.disable(gl.CULL_FACE);
+
 }
 
 function turnDepthBuffer() {
@@ -317,7 +316,8 @@ function render() {
     drawScene();
     gl.useProgram(program);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
-    turnCullFace();
+    //turnCullFace();
+    //gl.disable(CULL_FACE)
     turnDepthBuffer();
 }
 
@@ -335,7 +335,14 @@ function loadProjection() {
 const gui = new GUI();
 const optionFolder = gui.addFolder('option');
 optionFolder.add(ocultFace, 'cullFace').name('backface culling').onChange(function (value) {
-    ocultFace.cullFace = value;
+    if (!ocultFace.cullFace)
+        gl.disable(gl.CULL_FACE)
+    else {
+        gl.enable(gl.CULL_FACE)
+        gl.cullFace(gl.BACK)
+        
+    }
+    console.log(ocultFace.cullFace)
 });
 optionFolder.add(ocultFace, 'depthTest').name('depth test').onChange(function (value) {
     ocultFace.depthTest = value;
@@ -368,13 +375,13 @@ upFolder.add(cameraPos, 'upZ', -1, 1).name('z').onChange(loadView);
 const lightsFolder = gui.addFolder('lights');
 
 //Pontual switch 
-lightsFolder.add(lights[0], 'on').name('Pontual switch').onChange(function(value){
-    if(value) {
+lightsFolder.add(lights[0], 'on').name('Pontual switch').onChange(function (value) {
+    if (value) {
         lights[0].lightAmb = vec3(40, 40, 40);
         lights[0].lightDif = vec3(70, 70, 70)
         lights[0].lightSpec = vec3(100, 100, 100);
     }
-    else{
+    else {
         lights[0].lightAmb = vec3(0, 0, 0);
         lights[0].lightDif = vec3(0, 0, 0);
         lights[0].lightSpec = vec3(0, 0, 0);
@@ -383,22 +390,22 @@ lightsFolder.add(lights[0], 'on').name('Pontual switch').onChange(function(value
 //Pontual properties
 const pontualFolder = lightsFolder.addFolder('Pontual light');
 const position1Folder = pontualFolder.addFolder('position');
-position1Folder.add(lights[0].position, '0', -10, 10).name('x').onChange(loadView);
-position1Folder.add(lights[0].position, '1', -10, 10).name('y').onChange(loadView);
-position1Folder.add(lights[0].position, '2', -10, 10).name('z').onChange(loadView);
+position1Folder.add(lights[0].position, '0', -100, 100).name('x').onChange(loadView);
+position1Folder.add(lights[0].position, '1', -100, 100).name('y').onChange(loadView);
+position1Folder.add(lights[0].position, '2', -100, 100).name('z').onChange(loadView);
 const intensities1Folder = pontualFolder.addFolder('intensities');
 intensities1Folder.addColor(lights[0], 'lightAmb').name('ambient');
 intensities1Folder.addColor(lights[0], 'lightDif').name('diffuse');
 intensities1Folder.addColor(lights[0], 'lightSpec').name('specular');
 
 //Directional switch 
-lightsFolder.add(lights[1], 'on').name('Direcional switch').onChange(function(value){
-    if(value) {
+lightsFolder.add(lights[1], 'on').name('Direcional switch').onChange(function (value) {
+    if (value) {
         lights[1].lightAmb = vec3(40, 40, 40);
         lights[1].lightDif = vec3(70, 70, 70);
         lights[1].lightSpec = vec3(100, 100, 100);
     }
-    else{
+    else {
         lights[1].lightAmb = vec3(0, 0, 0);
         lights[1].lightDif = vec3(0, 0, 0);
         lights[1].lightSpec = vec3(0, 0, 0);
@@ -407,22 +414,22 @@ lightsFolder.add(lights[1], 'on').name('Direcional switch').onChange(function(va
 //Directional properties
 const direcionalFolder = lightsFolder.addFolder('Directional light');
 const position2Folder = direcionalFolder.addFolder('position');
-position2Folder.add(lights[1].position, '0', -10, 10).name('x').onChange(loadView);
-position2Folder.add(lights[1].position, '1', -10, 10).name('y').onChange(loadView);
-position2Folder.add(lights[1].position, '2', -10, 10).name('z').onChange(loadView);
+position2Folder.add(lights[1].position, '0', -100, 100).name('x').onChange(loadView);
+position2Folder.add(lights[1].position, '1', -100, 100).name('y').onChange(loadView);
+position2Folder.add(lights[1].position, '2', -100, 100).name('z').onChange(loadView);
 const intensities2Folder = direcionalFolder.addFolder('intensities');
 intensities2Folder.addColor(lights[1], 'lightAmb').name('ambient');
 intensities2Folder.addColor(lights[1], 'lightDif').name('diffuse');
 intensities2Folder.addColor(lights[1], 'lightSpec').name('specular');
 
 //Spotlight switch
-lightsFolder.add(lights[2], 'on').name('Spotligh switch').onChange(function(value){
-    if(value) {
+lightsFolder.add(lights[2], 'on').name('Spotligh switch').onChange(function (value) {
+    if (value) {
         lights[2].lightAmb = vec3(40, 40, 40);
         lights[2].lightDif = vec3(140, 140, 140);
         lights[2].lightSpec = vec3(255, 255, 255);
     }
-    else{
+    else {
         lights[2].lightAmb = vec3(0, 0, 0);
         lights[2].lightDif = vec3(0, 0, 0);
         lights[2].lightSpec = vec3(0, 0, 0);
@@ -431,18 +438,18 @@ lightsFolder.add(lights[2], 'on').name('Spotligh switch').onChange(function(valu
 //Spotlight properties
 const spotlightFolder = lightsFolder.addFolder('Spotlight');
 const position3Folder = spotlightFolder.addFolder('position');
-position3Folder.add(lights[2].position, '0', -10, 10).name('x').onChange(loadView);
-position3Folder.add(lights[2].position, '1', -10, 10).name('y').onChange(loadView);
-position3Folder.add(lights[2].position, '2', -10, 10).name('z').onChange(loadView);
+position3Folder.add(lights[2].position, '0', -100, 100).name('x').onChange(loadView);
+position3Folder.add(lights[2].position, '1', -100, 100).name('y').onChange(loadView);
+position3Folder.add(lights[2].position, '2', -100, 100).name('z').onChange(loadView);
 position3Folder.add(lights[2].position, '3', 0, 1).name('w').onChange(loadView);
 const intensities3Folder = spotlightFolder.addFolder('intensities');
 intensities3Folder.addColor(lights[2], 'lightAmb').name('ambient');// da um warning
 intensities3Folder.addColor(lights[2], 'lightDif').name('diffuse');// da um warning
 intensities3Folder.addColor(lights[2], 'lightSpec').name('specular');// da um warning
 const axis3Folder = spotlightFolder.addFolder('axis');
-axis3Folder.add(lights[2].axis, '0', -10, 10).name('x').onChange(loadView);
-axis3Folder.add(lights[2].axis, '1', -10, 10).name('y').onChange(loadView);
-axis3Folder.add(lights[2].axis, '2', -10, 10).name('z').onChange(loadView);
+axis3Folder.add(lights[2].axis, '0', -100, 100).name('x').onChange(loadView);
+axis3Folder.add(lights[2].axis, '1', -100, 100).name('y').onChange(loadView);
+axis3Folder.add(lights[2].axis, '2', -100, 100).name('z').onChange(loadView);
 spotlightFolder.add(lights[2], 'aperture', 0, 360).name('aperture').onChange(loadView);
 spotlightFolder.add(lights[2], 'cutoff', 0, 100).name('cutoff').onChange(loadView);
 

@@ -33,17 +33,17 @@ uniform int uNLights;
 uniform MaterialInfo uMaterial;
 uniform LightInfo uLights[MAX_LIGHTS];
 
-varying vec3 fLight;
 varying vec3 fViewer;
 varying vec3 fPosC;
 
 vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
-     vec3 l = vec3(0.,0.,0.);
-     if(light.position.w == 0.0)
+    vec3 l = vec3(0.,0.,0.);
+    if(light.position.w == 0.0)
         l = light.position.xyz;
     else
-        l = light.position.xyz - fPosC;//TODO
-    vec3 L = normalize(l);//TODO usar o l ou fViewer
+        l = light.position.xyz - fPosC;
+    vec3 L = normalize(l);
+    float d = length(light.position.xyz - fPosC);
     float diffuseFactor = max(dot(L, N), 0.0);
     vec3 R = normalize(reflect(-L, N));
     float specularFactor = pow(max(dot(R, V), 0.0), uMaterial.shininess);
@@ -52,7 +52,7 @@ vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
     vec3 specular = light.specular * specularFactor * uMaterial.Ks;
     if(dot(L, N) < 0.0)
         specular = vec3(0.0,0.0,0.0);
-    return (ambient + diffuse + specular);
+    return ambient + diffuse + specular;
 }
 
 vec3 calculateSpotLight(LightInfo light, vec3 N, vec3 V){
