@@ -120,6 +120,7 @@ canvas.addEventListener("mousedown", function (event) {
     let r = length(v);
     phiI = Math.asin(v[1] / r);
     thetaI = Math.asin(v[0] / (r * Math.cos(phiI)));
+    console.log(thetaI)
     if (v[2] < 0) thetaI = Math.PI - thetaI;
 });
 
@@ -316,8 +317,7 @@ function render() {
     drawScene();
     gl.useProgram(program);
     gl.uniformMatrix4fv(gl.getUniformLocation(program, "mProjection"), false, flatten(mProjection));
-    //turnCullFace();
-    //gl.disable(CULL_FACE)
+    turnCullFace();
     turnDepthBuffer();
 }
 
