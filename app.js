@@ -376,9 +376,9 @@ for (let i = 0; i < lights.length; i++) {
 
 //Change material characteristics
 const materialFolder = gui.addFolder('material');
-materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');// da um warning
-materialFolder.addColor(bunnyMaterial, 'materialDif').name('Kd');// da um warning
-materialFolder.addColor(bunnyMaterial, 'materialSpec').name('Ks');// da um warning
+materialFolder.addColor(bunnyMaterial, 'materialAmb').name('Ka');
+materialFolder.addColor(bunnyMaterial, 'materialDif').name('Kd');
+materialFolder.addColor(bunnyMaterial, 'materialSpec').name('Ks');
 materialFolder.add(bunnyMaterial, 'shininess', 0, 100);
 
 const urls = ["shader.vert", "shader.frag"];
