@@ -12,7 +12,7 @@ import * as BUNNY from './libs/objects/bunny.js';
 let gl;
 let mode;               // Drawing mode (gl.LINES or gl.TRIANGLES)
 const VP_DISTANCE = 4;
-let uColor;
+
 
 let mView;
 let mProjection;
@@ -20,11 +20,6 @@ const canvas = document.getElementById("gl-canvas");
 let aspect = canvas.width / canvas.height;
 let program;
 
-const PLATFORM_COLOR = [0.66, 0.46, 0.28];
-const CYLINDER_COLOR = [0.18, 0.55, 0.34];
-const CUBE_COLOR = [0.64, 0.19, 0.19];
-const TORUS_COLOR = [0.13, 0.61, 0];
-const BUNNY_COLOR = [1, 0.80, 0.86];
 
 let lights = [
     {
@@ -196,7 +191,6 @@ function uploadLights(program, id, lights) {
 function setup(shaders) {
     gl = setupWebGL(canvas);
     program = buildProgramFromSources(gl, shaders["shader.vert"], shaders["shader.frag"]);
-    uColor = gl.getUniformLocation(program, "uColor")
     resize_canvas();
     loadView();
     loadProjection();
@@ -257,10 +251,9 @@ function drawScene() {
     multTranslation([0, -1, 0]);
     multScale([10, 0.5, 10])
     pushMatrix();
-    uploadObject(program, "uMaterial", platformMaterial);
-    uploadMatrix(program, "mModelView", modelView());
-    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     uploadModelView();
+    uploadObject(program, "uMaterial", platformMaterial);
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     CUBE.draw(gl, program, mode);
     popMatrix();
     pushMatrix();
@@ -268,7 +261,6 @@ function drawScene() {
     multScale([0.2, 4, 0.2]);
     uploadModelView();
     uploadObject(program, "uMaterial", cylinderMaterial);
-    uploadMatrix(program, "mModelView", modelView());
     uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     CYLINDER.draw(gl, program, mode);
     popMatrix();
@@ -277,7 +269,6 @@ function drawScene() {
     multScale([0.2, 4, 0.2]);
     uploadModelView();
     uploadObject(program, "uMaterial", cubeMaterial);
-    uploadMatrix(program, "mModelView", modelView());
     uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     CUBE.draw(gl, program, mode);
     popMatrix();
@@ -286,17 +277,15 @@ function drawScene() {
     multScale([0.2, 4, 0.2]);
     uploadModelView();
     uploadObject(program, "uMaterial", torusMaterial);
-    uploadMatrix(program, "mModelView", modelView());
     uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     TORUS.draw(gl, program, mode);
     popMatrix();
     pushMatrix();
     multTranslation([0.2, 0.5, 0.2]);
     multScale([2, 25, 2]);
-    uploadObject(program, "uMaterial", bunnyMaterial);
-    uploadMatrix(program, "mModelView", modelView());
-    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     uploadModelView();
+    uploadObject(program, "uMaterial", bunnyMaterial);
+    uploadMatrix(program, "mNormals", normalMatrix(modelView()));
     BUNNY.draw(gl, program, mode);
     popMatrix();
     popMatrix();
