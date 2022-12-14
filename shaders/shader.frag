@@ -2,9 +2,6 @@ precision highp float;
 precision highp int;
 const float PI = 3.141516;
 const int MAX_LIGHTS = 8;
-uniform vec3 uColor;
-
-varying vec3 fNormal;
 
 struct MaterialInfo {
     vec3 Ka;
@@ -36,6 +33,7 @@ uniform LightInfo uLights[MAX_LIGHTS];
 
 varying vec3 fViewer;
 varying vec3 fPosC;
+varying vec3 fNormal;
 
 vec3 calculateDirLight(LightInfo light, vec3 N, vec3 V){
     vec3 l = vec3(0.,0.,0.);

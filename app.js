@@ -251,16 +251,12 @@ function turnDepthBuffer() {
     else gl.disable(gl.DEPTH_TEST);
 }
 
-function changeColor(color) {
-    gl.uniform3fv(uColor, color);
-}
 
 function drawScene() {
     pushMatrix();
     multTranslation([0, -1, 0]);
     multScale([10, 0.5, 10])
     pushMatrix();
-    changeColor(PLATFORM_COLOR);
     uploadObject(program, "uMaterial", platformMaterial);
     uploadMatrix(program, "mModelView", modelView());
     uploadMatrix(program, "mNormals", normalMatrix(modelView()));
@@ -270,7 +266,6 @@ function drawScene() {
     pushMatrix();
     multTranslation([0.2, 2.5, -0.2]);
     multScale([0.2, 4, 0.2]);
-    changeColor(CYLINDER_COLOR);
     uploadModelView();
     uploadObject(program, "uMaterial", cylinderMaterial);
     uploadMatrix(program, "mModelView", modelView());
@@ -280,7 +275,6 @@ function drawScene() {
     pushMatrix();
     multTranslation([-0.2, 2.5, -0.2]);
     multScale([0.2, 4, 0.2]);
-    changeColor(CUBE_COLOR);
     uploadModelView();
     uploadObject(program, "uMaterial", cubeMaterial);
     uploadMatrix(program, "mModelView", modelView());
@@ -290,7 +284,6 @@ function drawScene() {
     pushMatrix();
     multTranslation([-0.2, 1.3, 0.2]);
     multScale([0.2, 4, 0.2]);
-    changeColor(TORUS_COLOR);
     uploadModelView();
     uploadObject(program, "uMaterial", torusMaterial);
     uploadMatrix(program, "mModelView", modelView());
@@ -300,7 +293,6 @@ function drawScene() {
     pushMatrix();
     multTranslation([0.2, 0.5, 0.2]);
     multScale([2, 25, 2]);
-    changeColor(BUNNY_COLOR);
     uploadObject(program, "uMaterial", bunnyMaterial);
     uploadMatrix(program, "mModelView", modelView());
     uploadMatrix(program, "mNormals", normalMatrix(modelView()));
