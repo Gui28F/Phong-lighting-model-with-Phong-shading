@@ -14,6 +14,7 @@ struct MaterialInfo {
 };
 
 struct LightInfo {
+    float on;
     // Light colour intensities
     vec3 ambient;
     vec3 diffuse;
@@ -71,10 +72,12 @@ void main() {
     vec3 result = vec3(0.,0.,0.);
     for(int i = 0; i < MAX_LIGHTS; i++){
         if(i == uNLights) break; 
-        if(uLights[i].aperture > -1.)
-            result += calculateSpotLight(uLights[i], N, V);
-        else
-            result += calculateDirLight(uLights[i], N, V);
+        if(uLights[i].on >= 1.){
+            if(uLights[i].aperture > -1.)
+                result += calculateSpotLight(uLights[i], N, V);
+            else
+                result += calculateDirLight(uLights[i], N, V);
+        }
     }
     gl_FragColor = vec4(result, 1.0);
 }
