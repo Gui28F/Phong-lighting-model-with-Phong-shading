@@ -22,8 +22,6 @@ struct LightInfo {
     vec4 axis;
     float aperture;
     float cutoff;
-    //   additional fields
-    // ...
 };
 
 
