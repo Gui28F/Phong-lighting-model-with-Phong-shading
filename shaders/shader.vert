@@ -1,8 +1,6 @@
 precision highp float;
 precision highp int;
-const int MAX_LIGHTS = 8;
 
-uniform vec4 lightsPositions[MAX_LIGHTS];
 attribute vec4 vPosition;
 attribute vec4 vNormal;
 uniform mat4 mModelView;
